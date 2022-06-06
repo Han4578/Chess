@@ -1,6 +1,73 @@
 [{
-    "name": "b_bishop",
-    "location":[13,15],
-    "src":"images/b_bishop.png"
-}
+        "name": "b_bishop",
+        "location": ["c8", "f8"],
+        "src": "images/b_bishop.png",
+        "type": "bishop"
+    },
+    {
+        "name": "b_king",
+        "location": ["e8"],
+        "src": "images/b_king.png",
+        "type": "king"
+    },
+    {
+        "name": "b_knight",
+        "location": ["b8", "g8"],
+        "src": "images/b_knight.png",
+        "type": "knight"
+    },
+    {
+        "name": "b_pawn",
+        "location": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"],
+        "src": "images/b_pawn.png",
+        "type": "pawn"
+    },
+    {
+        "name": "b_queen",
+        "location": ["d8"],
+        "src": "images/b_queen.png",
+        "type": "queen"
+    },
+    {
+        "name": "b_rook",
+        "location": ["a8", "h8"],
+        "src": "images/b_rook.png",
+        "type": "rook"
+    },
+    {
+        "name": "w_bishop",
+        "location": ["c1", "f1"],
+        "src": "images/w_bishop.png",
+        "type": "bishop"
+    },
+    {
+        "name": "w_king",
+        "location": ["e1"],
+        "src": "images/w_king.png",
+        "type": "king"
+    },
+    {
+        "name": "w_knight",
+        "location": ["b1", "g1"],
+        "src": "images/w_knight.png",
+        "type": "knight"
+    },
+    {
+        "name": "w_pawn",
+        "location": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+        "src": "images/w_pawn.png",
+        "type": "pawn"
+    },
+    {
+        "name": "w_queen",
+        "location": ["d1"],
+        "src": "images/w_queen.png",
+        "type": "queen"
+    },
+    {
+        "name": "w_rook",
+        "location": ["a1", "h1"],
+        "src": "images/w_rook.png",
+        "type": "rook"
+    }
 ]
