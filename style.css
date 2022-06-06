@@ -4,22 +4,35 @@
     box-sizing: border-box;
 }
 
-body{
-    display: flex;
-    justify-content: center;
-    align-content: center;
-}
+/* body{
+    
+} */
 
 #board{
     border: 4px #666 solid;
-    display: grid;
-    grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     width: 40%;
     aspect-ratio: 1;
+    margin: 0 auto;
     margin-top: 2rem;
+}
+#options{
+    margin: 0 auto;
+    width: 40%;
+    background-color: rgb(86, 222, 222);
+    display: flex;
+    justify-content: space-around;
+}
+
+
+.reverse {
+    flex-wrap: wrap-reverse !important;
 }
 
 .tile{
+    flex: 1 0 12.5%;
+    aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;
