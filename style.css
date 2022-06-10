@@ -28,6 +28,7 @@
 
 .reverse {
     flex-wrap: wrap-reverse !important;
+    flex-direction: row-reverse;
 }
 
 .tile{
@@ -36,9 +37,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 1px black solid;
 }
 
 .piece{
     width: 80%;
     height: 80%;
+}
+
+.selected{
+    background-color: aquamarine !important;
+}
+
+.possible{
+    background-color: blue !important;
 }
