@@ -1,7 +1,12 @@
 import pieces from "./pieces.json" assert {type: 'json'};
+import {determineRookMoves} from "./pieceFunctions/rook.js" ;
+import {determineBishopMoves} from "./pieceFunctions/bishop.js" ;
+import {determineQueenMoves} from "./pieceFunctions/queen.js" ;
+import {determineKnightMoves} from "./pieceFunctions/knight.js" ;
+import {determineKingMoves} from "./pieceFunctions/king.js" ;
+import {determinePawnMoves} from "./pieceFunctions/pawn.js" ;
 
-
-let board = document.getElementById('board');
+export let board = document.getElementById('board');
 let reverseBtn = document.getElementById('reverse')
 
 const setupBoard = {
@@ -57,9 +62,11 @@ setupBoard.setup()
 let piece = Array.from(document.getElementsByClassName('piece'))
 let tile = Array.from(document.getElementsByClassName('tile'))
 let possibleMoves = Array.from(document.getElementsByClassName('possible'))
-let turn = 'black'
+let turn = 'white'
 let currentPiece = ''
 let selectedPiece = ''
+let colour
+let hasTurns = true
 
 changeTurn()
 
@@ -109,8 +116,15 @@ tile.forEach(t => {
             let t = e.target
             if (selectedPiece == '' || !(t.classList.contains('possible'))) return
         
-            let droppedPieceId = document.getElementById(selectedPiece)
-            t.appendChild(droppedPieceId);
+            let droppedPiece = document.getElementById(selectedPiece)
+            t.appendChild(droppedPiece);
+            piece.forEach(p => {p.dataset.firstMove = false})
+            //Y U NO WORKKKKKKKKKKKKKKKKKK
+            if(t.dataset.firstMove == true){
+                console.log(droppedPiece)
+                droppedPiece.dataset.firstMove = true
+                t.dataset.firstMove = false
+            }
             selectedPiece = '';
         
             (t.children.length > 1) ? t.removeChild(t.firstChild): ""
@@ -118,6 +132,7 @@ tile.forEach(t => {
             tile.forEach(t => {
                 t.classList.remove('possible')
                 t.classList.remove('selected')
+                t.dataset.firstMove = false
             })
 
             changeTurn()
@@ -125,10 +140,26 @@ tile.forEach(t => {
     })
     
 
-function determinePieceType(colour, type, id, location) {
+function determinePieceType(c, type, id, location) {
+    colour = c
     switch (type) {
         case "rook":
-            determineRookMoves(colour, id, location);
+            determineRookMoves(id, location);
+            break
+        case "bishop":
+            determineBishopMoves(id, location);
+            break
+        case "queen":
+            determineQueenMoves(id, location);
+            break
+        case "knight":
+            determineKnightMoves(id, location);
+            break
+        case "king":
+            determineKingMoves(id, location);
+            break
+        case "pawn":
+            determinePawnMoves(id, location, c);
             break
 
         default:
@@ -136,14 +167,40 @@ function determinePieceType(colour, type, id, location) {
     }
 }
 
+
+export function checkAvailability(x, y) {
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        correspondingTile.classList.add('possible')
+        return false
+    } else {
+        if (correspondingTile.firstElementChild.dataset.colour !== colour) {
+            correspondingTile.classList.add('possible')
+            return true
+        } else return false
+    }
+
+
+}
+
+export function locateTile(x, y) {
+    let result
+    Array.from(board.children).forEach(tile => {
+        let z = String.fromCharCode(x + 96)
+        let currentTile = z + y.toString()
+        if (currentTile == tile.dataset.number) result = tile
+    })
+    
+    return result
+}
+
 function changeTurn(){
-    (turn == 'white')?turn = 'black':turn = 'white';
     piece.forEach(p => {
         (p.dataset.colour !== turn)?p.style.pointerEvents = 'none':p.style.pointerEvents = 'auto';
     })
+    if (!hasTurns) return
+    (turn == 'white')?turn = 'black':turn = 'white';
 }
-
-
 
 reverseBtn.addEventListener('click', () => {
     board.classList.toggle('reverse')
