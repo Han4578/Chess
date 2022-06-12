@@ -6,7 +6,8 @@ import {determineKnightMoves} from "./pieceFunctions/knight.js" ;
 import {determineKingMoves} from "./pieceFunctions/king.js" ;
 import {determinePawnMoves} from "./pieceFunctions/pawn.js" ;
 
-export let board = document.getElementById('board');
+export let doc = document
+let board = document.getElementById('board');
 let reverseBtn = document.getElementById('reverse')
 
 const setupBoard = {
@@ -22,6 +23,7 @@ const setupBoard = {
             let tile = document.createElement('div');
             tile.classList.add('tile')
             tile.dataset.number = String.fromCharCode(i + 96) + Math.abs(n - 9);
+            tile.dataset.firstMove = false;
             (i % 2 == 0) ? tile.style.backgroundColor = 'black': '';
             board.appendChild(tile);
         }
@@ -32,6 +34,7 @@ const setupBoard = {
             let tile = document.createElement('div');
             tile.classList.add('tile')
             tile.dataset.number = String.fromCharCode(i + 96) + Math.abs(n - 9);
+            tile.dataset.firstMove = false;
             (i % 2 == 1) ? tile.style.backgroundColor = 'black': '';
             board.appendChild(tile);
         }
@@ -49,6 +52,7 @@ function startGame() {
             piece.id = l
             piece.setAttribute("draggable", true)
             piece.classList.add('piece')
+            if (p.type == "rook" || p.type == "king") piece.dataset.canCastle = true
 
             Array.from(board.children).forEach(tile => {
                 (tile.dataset.number == l) ? tile.appendChild(piece): ''
@@ -59,7 +63,7 @@ function startGame() {
 setupBoard.setup()
 //------------------------------------------------------------------------------------------------------------------------------
 
-let piece = Array.from(document.getElementsByClassName('piece'))
+export let piece = Array.from(document.getElementsByClassName('piece'))
 let tile = Array.from(document.getElementsByClassName('tile'))
 let possibleMoves = Array.from(document.getElementsByClassName('possible'))
 let turn = 'white'
@@ -84,6 +88,7 @@ piece.forEach(p => {
         if (selectedPiece == e.target.id) {
             selectedPiece = ''
             p.parentElement.classList.remove('selected') //cancels selection when same piece is selected
+            tile.forEach(t => {t.dataset.firstMove = false})
             return
         }
 
@@ -115,24 +120,29 @@ tile.forEach(t => {
         function dropPiece(e) {
             let t = e.target
             if (selectedPiece == '' || !(t.classList.contains('possible'))) return
-        
+            
             let droppedPiece = document.getElementById(selectedPiece)
-            t.appendChild(droppedPiece);
             piece.forEach(p => {p.dataset.firstMove = false})
-            //Y U NO WORKKKKKKKKKKKKKKKKKK
-            if(t.dataset.firstMove == true){
-                console.log(droppedPiece)
+            t.appendChild(droppedPiece);
+            
+            if(t.dataset.firstMove == 'true') {
                 droppedPiece.dataset.firstMove = true
                 t.dataset.firstMove = false
             }
+
+            if (droppedPiece.dataset.canCastle == 'true') droppedPiece.dataset.canCastle = false
+
             selectedPiece = '';
-        
             (t.children.length > 1) ? t.removeChild(t.firstChild): ""
 
             tile.forEach(t => {
                 t.classList.remove('possible')
                 t.classList.remove('selected')
                 t.dataset.firstMove = false
+                if (t.classList.contains('en-passanted')) {
+                    t.removeChild(t.firstChild)
+                    t.classList.remove('en-passanted')
+                }
             })
 
             changeTurn()
@@ -156,7 +166,7 @@ function determinePieceType(c, type, id, location) {
             determineKnightMoves(id, location);
             break
         case "king":
-            determineKingMoves(id, location);
+            determineKingMoves(id, location, c);
             break
         case "pawn":
             determinePawnMoves(id, location, c);

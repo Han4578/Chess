@@ -78,15 +78,17 @@ function checkForEnPassantB(x,y) {
     let rightTile = locateTile(right, y)
 
     if (left < 9 && left > 0) {
-        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == true) {
+        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
             let tile = locateTile(left, y - 1)
             tile.classList.add('possible')
+            leftTile.firstElementChild.classList.add('en-passanted')
         }
     }
     if (right < 9 && right > 0) {
-        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == true) {
+        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
             let tile = locateTile(right, y - 1)
             tile.classList.add('possible')
+            rightTile.firstElementChild.classList.add('en-passanted')
         }
     }
 }
@@ -98,15 +100,17 @@ function checkForEnPassantW(x,y) {
     let rightTile = locateTile(right, y)
 
     if (left < 9 && left > 0) {
-        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == true) {
+        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
             let tile = locateTile(left, y + 1)
             tile.classList.add('possible')
+            leftTile.firstElementChild.classList.add('en-passanted')
         }
     }
     if (right < 9 && right > 0) {
-        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == true) {
-            let tile = locateTile(left, y + 1)
+        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
+            let tile = locateTile(right, y + 1)
             tile.classList.add('possible')
+            rightTile.classList.add('en-passanted')
         }
     }
 }
