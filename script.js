@@ -3,7 +3,7 @@ import {determineRookMoves} from "./pieceFunctions/rook.js" ;
 import {determineBishopMoves} from "./pieceFunctions/bishop.js" ;
 import {determineQueenMoves} from "./pieceFunctions/queen.js" ;
 import {determineKnightMoves} from "./pieceFunctions/knight.js" ;
-import {determineKingMoves} from "./pieceFunctions/king.js" ;
+import {determineKingMoves, castle} from "./pieceFunctions/king.js" ;
 import {determinePawnMoves} from "./pieceFunctions/pawn.js" ;
 
 export let doc = document
@@ -55,7 +55,10 @@ function startGame() {
             if (p.type == "rook" || p.type == "king") piece.dataset.canCastle = true
 
             Array.from(board.children).forEach(tile => {
-                (tile.dataset.number == l) ? tile.appendChild(piece): ''
+                if (tile.dataset.number == l) {
+                    tile.appendChild(piece)
+                    tile.dataset.hasPiece = true
+                }
             })
         })
     })
@@ -102,7 +105,7 @@ piece.forEach(p => {
         p.parentElement.classList.add('selected') //selects current piece
         selectedPiece = e.target.id
         currentPiece = e.target
-        determinePieceType(e.target.dataset.colour, e.target.dataset.type, e.target.id, e.target.parentElement.dataset.number)
+        determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'move')
         e.stopPropagation()
 
     }
@@ -129,47 +132,54 @@ tile.forEach(t => {
                 droppedPiece.dataset.firstMove = true
                 t.dataset.firstMove = false
             }
-
-            if (droppedPiece.dataset.canCastle == 'true') droppedPiece.dataset.canCastle = false
-
+            
+            if (droppedPiece.dataset.canCastle == 'true' && t.dataset.castle !== 'true') droppedPiece.dataset.canCastle = false
+            
             selectedPiece = '';
             (t.children.length > 1) ? t.removeChild(t.firstChild): ""
-
+            
+            if (t.dataset.castle == 'true') castle(t.dataset.number, droppedPiece)
+            
             tile.forEach(t => {
                 t.classList.remove('possible')
                 t.classList.remove('selected')
                 t.dataset.firstMove = false
+                t.dataset.castle = false
                 if (t.classList.contains('en-passanted')) {
                     t.removeChild(t.firstChild)
                     t.classList.remove('en-passanted')
                 }
+                (Array.from(t.children).length == 1)? t.dataset.hasPiece = true : t.dataset.hasPiece = false
+                t.dataset.checkable = false
             })
 
+            
+            determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'checkmate')
             changeTurn()
         }
     })
     
 
-function determinePieceType(c, type, id, location) {
-    colour = c
-    switch (type) {
+function determinePieceType(piece, purpose) {
+    
+    switch (piece.dataset.type) {
         case "rook":
-            determineRookMoves(id, location);
+            determineRookMoves(piece, location, purpose);
             break
         case "bishop":
-            determineBishopMoves(id, location);
+            determineBishopMoves(piece, location, purpose);
             break
         case "queen":
-            determineQueenMoves(id, location);
+            determineQueenMoves(piece, location, purpose);
             break
         case "knight":
-            determineKnightMoves(id, location);
+            determineKnightMoves(piece, location, purpose);
             break
         case "king":
-            determineKingMoves(id, location, c);
+            determineKingMoves(piece, location, purpose);
             break
         case "pawn":
-            determinePawnMoves(id, location, c);
+            determinePawnMoves(piece, location, purpose);
             break
 
         default:
@@ -189,8 +199,6 @@ export function checkAvailability(x, y) {
             return true
         } else return false
     }
-
-
 }
 
 export function locateTile(x, y) {
@@ -200,8 +208,19 @@ export function locateTile(x, y) {
         let currentTile = z + y.toString()
         if (currentTile == tile.dataset.number) result = tile
     })
-    
     return result
+}
+
+export function checkForCheckmate(c){
+    
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        correspondingTile.dataset.checkable = true
+    } else if (correspondingTile.firstChildElement.dataset.type == 'king' && correspondingTile.firstChildElement.dataset.colour !== c){
+        tile.forEach(t => {
+            //find the king and set it as checked
+        })
+    }
 }
 
 function changeTurn(){

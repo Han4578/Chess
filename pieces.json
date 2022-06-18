@@ -42,7 +42,7 @@
     },
     {
         "name": "w_bishop",
-        "location": ["c1", "f1"],
+        "location": ["c1", "f"],
         "src": "images/w_bishop.png",
         "type": "bishop",
         "colour":"white"    },
@@ -54,7 +54,7 @@
         "colour":"white"    },
     {
         "name": "w_knight",
-        "location": ["b1", "g1"],
+        "location": ["b1", "g"],
         "src": "images/w_knight.png",
         "type": "knight",
         "colour":"white"    },

@@ -1,13 +1,11 @@
-let id = ''
 let X_Coords = ''
 let Y_Coords = ''
 let colour
 
-export function determinePawnMoves(i, l, c) {
-    id = i
+export function determinePawnMoves(piece, l, purpose) {
     X_Coords = l.charCodeAt(0) - 96
     Y_Coords = parseFloat(l[1]);
-    colour = c;
+    colour = piece.dataset.colour;
 
     (c == 'white') ? whiteMove(): blackMove();
 }
