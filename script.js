@@ -105,6 +105,7 @@ piece.forEach(p => {
         p.parentElement.classList.add('selected') //selects current piece
         selectedPiece = e.target.id
         currentPiece = e.target
+        colour = e.target.dataset.colour
         determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'move')
         e.stopPropagation()
 
@@ -154,13 +155,13 @@ tile.forEach(t => {
             })
 
             
-            determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'checkmate')
+            // determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'checkmate')
             changeTurn()
         }
     })
     
 
-function determinePieceType(piece, purpose) {
+function determinePieceType(piece,location, purpose) {
     
     switch (piece.dataset.type) {
         case "rook":
@@ -197,7 +198,7 @@ export function checkAvailability(x, y) {
         if (correspondingTile.firstElementChild.dataset.colour !== colour) {
             correspondingTile.classList.add('possible')
             return true
-        } else return false
+        } else return true
     }
 }
 

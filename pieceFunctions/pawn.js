@@ -7,7 +7,7 @@ export function determinePawnMoves(piece, l, purpose) {
     Y_Coords = parseFloat(l[1]);
     colour = piece.dataset.colour;
 
-    (c == 'white') ? whiteMove(): blackMove();
+    (colour == 'white') ? whiteMove(): blackMove();
 }
 
 function whiteMove() {

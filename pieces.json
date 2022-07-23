@@ -42,38 +42,44 @@
     },
     {
         "name": "w_bishop",
-        "location": ["c1", "f"],
+        "location": ["c1", "f1"],
         "src": "images/w_bishop.png",
         "type": "bishop",
-        "colour":"white"    },
+        "colour":"white"    
+    },
     {
         "name": "w_king",
         "location": ["e1"],
         "src": "images/w_king.png",
         "type": "king",
-        "colour":"white"    },
+        "colour":"white"    
+    },
     {
         "name": "w_knight",
-        "location": ["b1", "g"],
+        "location": ["b1", "g1"],
         "src": "images/w_knight.png",
         "type": "knight",
-        "colour":"white"    },
+        "colour":"white"    
+    },
     {
         "name": "w_pawn",
-        "location": ["a", "b2", "c2", "d", "e", "f2", "g2", "h2"],
+        "location": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
         "src": "images/w_pawn.png",
         "type": "pawn",
-        "colour":"white"    },
+        "colour":"white"    
+    },
     {
         "name": "w_queen",
         "location": ["d1"],
         "src": "images/w_queen.png",
         "type": "queen",
-        "colour":"white"    },
+        "colour":"white"    
+    },
     {
         "name": "w_rook",
         "location": ["a1", "h1"],
         "src": "images/w_rook.png",
         "type": "rook",
-        "colour":"white"    }
+        "colour":"white"    
+    }
 ]
