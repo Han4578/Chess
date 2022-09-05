@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="script.js" defer></script>
     <title>Chess</title>
 </head>
 <body>
@@ -14,9 +13,735 @@
     <br>
     <div id="options">
         <div>
+            
             <input type="checkbox" name="reverse" id="reverse">
             <label for="reverse">Reverse board</label>
         </div>
     </div>
 </body>
+
+<script>
+    let board = document.getElementById('board');
+let reverseBtn = document.getElementById('reverse')
+let pieces = [{
+    "name": "b_bishop",
+    "location": ["c8", "f8"],
+    "src": "images/b_bishop.png",
+    "type": "bishop",
+    "colour": "black"
+},
+{
+    "name": "b_king",
+    "location": ["e8"],
+    "src": "images/b_king.png",
+    "type": "king",
+    "colour": "black"
+},
+{
+    "name": "b_knight",
+    "location": ["b8", "g8"],
+    "src": "images/b_knight.png",
+    "type": "knight",
+    "colour": "black"
+},
+{
+    "name": "b_pawn",
+    "location": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"],
+    "src": "images/b_pawn.png",
+    "type": "pawn",
+    "colour": "black"
+},
+{
+    "name": "b_queen",
+    "location": ["d8"],
+    "src": "images/b_queen.png",
+    "type": "queen",
+    "colour": "black"
+},
+{
+    "name": "b_rook",
+    "location": ["a8", "h8"],
+    "src": "images/b_rook.png",
+    "type": "rook",
+    "colour": "black"
+},
+{
+    "name": "w_bishop",
+    "location": ["c1", "f1"],
+    "src": "images/w_bishop.png",
+    "type": "bishop",
+    "colour":"white"    
+},
+{
+    "name": "w_king",
+    "location": ["e1"],
+    "src": "images/w_king.png",
+    "type": "king",
+    "colour":"white"    
+},
+{
+    "name": "w_knight",
+    "location": ["b1", "g1"],
+    "src": "images/w_knight.png",
+    "type": "knight",
+    "colour":"white"    
+},
+{
+    "name": "w_pawn",
+    "location": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+    "src": "images/w_pawn.png",
+    "type": "pawn",
+    "colour":"white"    
+},
+{
+    "name": "w_queen",
+    "location": ["d1"],
+    "src": "images/w_queen.png",
+    "type": "queen",
+    "colour":"white"    
+},
+{
+    "name": "w_rook",
+    "location": ["a1", "h1"],
+    "src": "images/w_rook.png",
+    "type": "rook",
+    "colour":"white"    
+}
+]
+
+const setupBoard = {
+    setup() {
+        for (let i = 1; i <= 4; ++i) {
+            this.whiteFirst(2 * i - 1)
+            this.blackFirst(2 * i)
+        }
+        startGame()
+    },
+    whiteFirst(n) {
+        for (let i = 1; i <= 8; i++) {
+            let tile = document.createElement('div');
+            tile.classList.add('tile')
+            tile.dataset.number = String.fromCharCode(i + 96) + Math.abs(n - 9);
+            tile.dataset.firstMove = false;
+            (i % 2 == 0) ? tile.style.backgroundColor = 'black': '';
+            board.appendChild(tile);
+        }
+    },
+
+    blackFirst(n) {
+        for (let i = 1; i <= 8; i++) {
+            let tile = document.createElement('div');
+            tile.classList.add('tile')
+            tile.dataset.number = String.fromCharCode(i + 96) + Math.abs(n - 9);
+            tile.dataset.firstMove = false;
+            (i % 2 == 1) ? tile.style.backgroundColor = 'black': '';
+            board.appendChild(tile);
+        }
+    }
+
+}
+
+function startGame() {
+    pieces.forEach(p => {
+        p.location.forEach(l => {
+            var piece = document.createElement('img')
+            piece.src = p.src
+            piece.dataset.type = p.type
+            piece.dataset.colour = p.colour
+            piece.id = l
+            piece.setAttribute("draggable", true)
+            piece.classList.add('piece')
+            if (p.type == "rook" || p.type == "king") piece.dataset.canCastle = true
+
+            Array.from(board.children).forEach(tile => {
+                if (tile.dataset.number == l) {
+                    tile.appendChild(piece)
+                    tile.dataset.hasPiece = true
+                }
+            })
+        })
+    })
+}
+setupBoard.setup()
+//------------------------------------------------------------------------------------------------------------------------------
+
+let piece = Array.from(document.getElementsByClassName('piece'))
+let tile = Array.from(document.getElementsByClassName('tile'))
+let possibleMoves = Array.from(document.getElementsByClassName('possible'))
+let turn = 'white'
+let currentPiece = ''
+let selectedPiece = ''
+let colour
+let hasTurns = true
+let id
+let X_Coords
+let Y_Coords
+let p
+
+changeTurn()
+
+piece.forEach(p => {
+
+    p.addEventListener("dragstart", selectPiece)
+    p.addEventListener("click",selectPiece)
+
+    function selectPiece(e) {
+        possibleMoves = Array.from(document.getElementsByClassName('possible'))
+        possibleMoves.forEach(t => {
+            t.classList.remove('possible')
+        }) //removes previous possible moves
+
+        if (selectedPiece == e.target.id) {
+            selectedPiece = ''
+            p.parentElement.classList.remove('selected') //cancels selection when same piece is selected
+            tile.forEach(t => {
+                t.dataset.firstMove = false
+                t.dataset.castle = false
+            })
+            return
+        }
+
+        let selectedClass = Array.from(document.getElementsByClassName('selected'))
+        if (selectedClass.length > 0) {
+            selectedClass.forEach(piece => {
+                piece.classList.remove('selected') //removes previous selection
+            })
+        }
+
+        p.parentElement.classList.add('selected') //selects current piece
+        selectedPiece = e.target.id
+        currentPiece = e.target
+        colour = e.target.dataset.colour
+        determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'move')
+        e.stopPropagation()
+
+    }
+
+})
+
+tile.forEach(t => {
+        t.addEventListener("drop", dropPiece)
+        t.addEventListener("click", dropPiece)
+
+        t.addEventListener("dragover", (e) => {
+            e.preventDefault()
+        })
+
+        function dropPiece(e) {
+            let t = e.target
+            if (selectedPiece == '' || !(t.classList.contains('possible'))) return
+            
+            let droppedPiece = document.getElementById(selectedPiece)
+            piece.forEach(p => {p.dataset.firstMove = false})
+            t.appendChild(droppedPiece);
+            
+            if(t.dataset.firstMove == 'true') {
+                droppedPiece.dataset.firstMove = true
+                t.dataset.firstMove = false
+            }
+            
+            if (droppedPiece.dataset.canCastle == 'true' && t.dataset.castle !== 'true') droppedPiece.dataset.canCastle = false
+            
+            selectedPiece = '';
+            (t.children.length > 1) ? t.removeChild(t.firstChild): ""
+            
+            if (t.dataset.castle == 'true') castle(t.dataset.number, droppedPiece)
+            
+            tile.forEach(t => {
+                t.classList.remove('possible')
+                t.classList.remove('selected')
+                t.dataset.firstMove = false
+                t.dataset.castle = false
+                if (t.classList.contains('en-passanted')) {
+                    t.removeChild(t.firstChild)
+                    t.classList.remove('en-passanted')
+                }
+                (Array.from(t.children).length == 1)? t.dataset.hasPiece = true : t.dataset.hasPiece = false
+                t.dataset.checkable = false
+            })
+
+            
+            // determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'checkmate')
+            changeTurn()
+        }
+    })
+    
+
+function determinePieceType(piece,location) {
+    
+    switch (piece.dataset.type) {
+        case "rook":
+            determineRookMoves(piece, location);
+            break
+        case "bishop":
+            determineBishopMoves(piece, location);
+            break
+        case "queen":
+            determineQueenMoves(piece, location);
+            break
+        case "knight":
+            determineKnightMoves(piece, location);
+            break
+        case "king":
+            determineKingMoves(piece, location);
+            break
+        case "pawn":
+            determinePawnMoves(piece, location);
+            break
+
+        default:
+            return
+    }
+}
+
+
+ function checkAvailability(x, y) {
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        correspondingTile.classList.add('possible')
+        return false
+    } else {
+        if (correspondingTile.firstElementChild.dataset.colour !== colour) {
+            correspondingTile.classList.add('possible')
+            return true
+        } else return true
+    }
+}
+
+ function locateTile(x, y) {
+    let result
+    Array.from(board.children).forEach(tile => {
+        let z = String.fromCharCode(x + 96)
+        let currentTile = z + y.toString()
+        if (currentTile == tile.dataset.number) result = tile
+    })
+    return result
+}
+
+ function checkForCheckmate(c){
+    
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        correspondingTile.dataset.checkable = true
+    } else if (correspondingTile.firstChildElement.dataset.type == 'king' && correspondingTile.firstChildElement.dataset.colour !== c){
+        tile.forEach(t => {
+            //find the king and set it as checked
+        })
+    }
+}
+
+function changeTurn(){
+    piece.forEach(p => {
+        (p.dataset.colour !== turn)?p.style.pointerEvents = 'none':p.style.pointerEvents = 'auto';
+    })
+    if (!hasTurns) return
+    (turn == 'white')?turn = 'black':turn = 'white';
+}
+
+reverseBtn.addEventListener('click', () => {
+    board.classList.toggle('reverse')
+})
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//BISHOP
+
+function determineBishopMoves(i, l) {
+    id = i
+    X_Coords = l.charCodeAt(0) - 96
+    Y_Coords = parseFloat(l[1])
+    let leftUp = Y_Coords
+    let rightDown = Y_Coords
+    let leftDown = X_Coords
+    let rightUp = X_Coords
+    for (let i = X_Coords + 1; i <= 8; i++) {
+        rightDown--
+        if (rightDown == 0 || rightDown == 9) break
+        let isEmpty = checkAvailability(i, rightDown)
+        if (isEmpty) break
+    }
+    for (let i = X_Coords - 1; i > 0; i--) {
+        leftUp++
+        if (leftUp == 0 || leftUp == 9) break
+        
+        let isEmpty = checkAvailability(i, leftUp)
+        if (isEmpty) break
+    }
+    for (let i = Y_Coords + 1; i <= 8; i++) {
+        rightUp++
+        if (rightUp == 0 || rightUp == 9) break
+        
+        let isEmpty = checkAvailability(rightUp, i)
+        if (isEmpty) break
+        
+    }
+    for (let i = Y_Coords - 1; i > 0; i--) {
+        leftDown--
+        if (leftDown == 0 || leftDown == 9) break
+        
+        let isEmpty = checkAvailability(leftDown, i)
+        if (isEmpty) break
+        
+    }
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//KNIGHT
+
+ function determineKnightMoves(i, l) {
+    id = i
+    X_Coords = l.charCodeAt(0) - 96
+    Y_Coords = parseFloat(l[1])
+
+    let L1 = {
+        x: X_Coords - 1,
+        y: Y_Coords + 2
+    }
+    let L2 = {
+        x: X_Coords + 1,
+        y: Y_Coords + 2
+    }
+    let L3 = {
+        x: X_Coords + 2,
+        y: Y_Coords + 1
+    }
+    let L4 = {
+        x: X_Coords + 2,
+        y: Y_Coords - 1
+    }
+    let L5 = {
+        x: X_Coords + 1,
+        y: Y_Coords - 2
+    }
+    let L6 = {
+        x: X_Coords - 1,
+        y: Y_Coords - 2
+    }
+    let L7 = {
+        x: X_Coords - 2,
+        y: Y_Coords - 1
+    }
+    let L8 = {
+        x: X_Coords - 2,
+        y: Y_Coords + 1
+    }
+    let locations = [L1,L2,L3,L4,L5,L6,L7,L8]
+
+    locations.forEach(loc => {
+        if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
+        checkAvailability(loc.x, loc.y)
+    })
+
+}
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//KING
+
+function determineKingMoves(piece, l,) {
+    p = piece
+    X_Coords = l.charCodeAt(0) - 96
+    Y_Coords = parseFloat(l[1])
+    colour = piece.dataset.colour
+
+    let L1 = {
+        x: X_Coords,
+        y: Y_Coords + 1
+    }
+    let L2 = {
+        x: X_Coords + 1,
+        y: Y_Coords + 1
+    }
+    let L3 = {
+        x: X_Coords + 1,
+        y: Y_Coords
+    }
+    let L4 = {
+        x: X_Coords + 1,
+        y: Y_Coords - 1
+    }
+    let L5 = {
+        x: X_Coords,
+        y: Y_Coords - 1
+    }
+    let L6 = {
+        x: X_Coords - 1,
+        y: Y_Coords - 1
+    }
+    let L7 = {
+        x: X_Coords - 1,
+        y: Y_Coords
+    }
+    let L8 = {
+        x: X_Coords - 1,
+        y: Y_Coords + 1
+    }
+    let locations = [L1, L2, L3, L4, L5, L6, L7, L8]
+
+    locations.forEach(loc => {
+        if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
+        if(locateTile(loc.x, loc.y).dataset.checkable == 'true') return
+        checkAvailability(loc.x, loc.y)
+    })
+
+    checkForCastle()
+}
+
+function checkForCastle() {
+    let currentPiece = p
+    if (currentPiece.dataset.canCastle !== 'true') return
+
+    let rooks = []
+    piece.forEach(p => {
+        if (p.dataset.colour == colour && p.dataset.canCastle == 'true' && p.dataset.type == 'rook') rooks.push(p)
+    })
+
+    if (rooks.length == 0) return
+    
+    let castleLeft = false
+    let castleRight = false
+    
+    rooks.forEach(r => {
+        let count = 0
+
+        if (r.id == 'a1' || r.id == 'a8') {
+            for (let i = X_Coords - 1; i > 1; i--) {
+                let correspondingTile = locateTile(i, Y_Coords)
+                if (Array.from(correspondingTile.children).length !== 0) count++;
+            }
+            if (count == 0) castleLeft = true
+        }
+        
+        if (r.id == 'h1' || r.id == 'h8') {
+            for (let i = X_Coords + 1; i < 8; i++) {
+                let correspondingTile = locateTile(i, Y_Coords)
+                if (Array.from(correspondingTile.children).length !== 0) count++;
+            }
+            if (count == 0) castleRight = true
+        }
+    })
+
+    if (castleLeft == true){
+        let correspondingTile = locateTile(X_Coords - 2, Y_Coords)
+        correspondingTile.classList.add('possible')
+        correspondingTile.dataset.castle = true
+    }
+    if (castleRight == true){
+        let correspondingTile = locateTile(X_Coords + 2, Y_Coords)
+        correspondingTile.classList.add('possible')
+        correspondingTile.dataset.castle = true
+    }
+}
+
+function castle(tileNum, king){
+    let y = king.id[1]
+    let rookTile
+    let rook
+    if (tileNum.includes('c')){
+        rook = locateTile(1, y).firstElementChild
+        rookTile = locateTile(4, y)
+    }
+    if (tileNum.includes('g')){
+        rook = locateTile(8, y).firstElementChild
+        rookTile = locateTile(6, y)
+    }
+    rookTile.appendChild(rook)
+    king.dataset.canCastle = false
+}
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//PAWN
+
+function determinePawnMoves(piece, l) {
+    X_Coords = l.charCodeAt(0) - 96
+    Y_Coords = parseFloat(l[1]);
+    colour = piece.dataset.colour;
+
+    (colour == 'white') ? whiteMove(): blackMove();
+}
+
+function whiteMove() {
+    if (Y_Coords == 8) return
+
+    checkAvailabilityPawn(X_Coords, Y_Coords + 1)
+    checkForEnemy(X_Coords, Y_Coords + 1)
+    checkForEnPassantW(X_Coords, Y_Coords)
+    if (Y_Coords == 2) specialTile(X_Coords, Y_Coords + 2)
+}
+
+function blackMove() {
+    if (Y_Coords == 0) return
+
+    checkAvailabilityPawn(X_Coords, Y_Coords - 1)
+    checkForEnemy(X_Coords, Y_Coords - 1)
+    checkForEnPassantB(X_Coords, Y_Coords)
+    if (Y_Coords == 7) specialTile(X_Coords, Y_Coords - 2)
+
+}
+
+function specialTile(x, y) {
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        correspondingTile.classList.add('possible')
+        correspondingTile.dataset.firstMove = true
+    }
+}
+
+function checkAvailabilityPawn(x, y) {
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        correspondingTile.classList.add('possible')
+    }
+}
+
+function checkForEnemy(x, y) {
+    let left = x - 1
+    let right = x + 1
+    let leftTile = locateTile(left, y)
+    let rightTile = locateTile(right, y)
+
+    if (left < 9 && left > 0) {
+        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.colour !== colour) leftTile.classList.add('possible');
+    }
+    if (right < 9 && right > 0) {
+        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.colour !== colour) rightTile.classList.add('possible');
+    }
+}
+
+function checkForEnPassantB(x,y) {
+    let left = x - 1
+    let right = x + 1
+    let leftTile = locateTile(left, y)
+    let rightTile = locateTile(right, y)
+
+    if (left < 9 && left > 0) {
+        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
+            let tile = locateTile(left, y - 1)
+            tile.classList.add('possible')
+            leftTile.firstElementChild.classList.add('en-passanted')
+        }
+    }
+    if (right < 9 && right > 0) {
+        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
+            let tile = locateTile(right, y - 1)
+            tile.classList.add('possible')
+            rightTile.firstElementChild.classList.add('en-passanted')
+        }
+    }
+}
+
+function checkForEnPassantW(x,y) {
+    let left = x - 1
+    let right = x + 1
+    let leftTile = locateTile(left, y)
+    let rightTile = locateTile(right, y)
+
+    if (left < 9 && left > 0) {
+        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
+            let tile = locateTile(left, y + 1)
+            tile.classList.add('possible')
+            leftTile.firstElementChild.classList.add('en-passanted')
+        }
+    }
+    if (right < 9 && right > 0) {
+        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
+            let tile = locateTile(right, y + 1)
+            tile.classList.add('possible')
+            rightTile.classList.add('en-passanted')
+        }
+    }
+}
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//QUEEN
+
+function determineQueenMoves(i, l) {
+    id = i
+    X_Coords = l.charCodeAt(0) - 96
+    Y_Coords = parseFloat(l[1])
+    let leftUp = Y_Coords
+    let rightDown = Y_Coords
+    let leftDown = X_Coords
+    let rightUp = X_Coords
+
+    for (let i = X_Coords + 1; i <= 8; i++) {
+        let isEmpty = checkAvailability(i, Y_Coords)
+        if (isEmpty) break
+    }
+    for (let i = X_Coords - 1; i > 0; i--) {
+        let isEmpty = checkAvailability(i, Y_Coords)
+        if (isEmpty) break
+    }
+    for (let i = Y_Coords + 1; i <= 8; i++) {
+        let isEmpty = checkAvailability(X_Coords, i)
+        if (isEmpty) break
+    }
+    for (let i = Y_Coords - 1; i > 0; i--) {
+        let isEmpty = checkAvailability(X_Coords, i)
+        if (isEmpty) break
+    }
+    for (let i = X_Coords + 1; i <= 8; i++) {
+        rightDown--
+        if (rightDown == 0 || rightDown == 9) break
+        let isEmpty = checkAvailability(i, rightDown)
+        if (isEmpty) break
+
+    }
+    for (let i = X_Coords - 1; i > 0; i--) {
+        leftUp++
+        if (leftUp == 0 || leftUp == 9) break
+
+        let isEmpty = checkAvailability(i, leftUp)
+        if (isEmpty) break
+
+    }
+    for (let i = Y_Coords + 1; i <= 8; i++) {
+        rightUp++
+        if (rightUp == 0 || rightUp == 9) break
+
+        let isEmpty = checkAvailability(rightUp, i)
+        if (isEmpty) break
+
+    }
+    for (let i = Y_Coords - 1; i > 0; i--) {
+        leftDown--
+        if (leftDown == 0 || leftDown == 9) break
+
+        let isEmpty = checkAvailability(leftDown, i)
+        if (isEmpty) break
+
+    }
+    
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//ROOK
+
+function determineRookMoves(i, l) {
+    let c = i.dataset.colour
+    let X_Coords = l.charCodeAt(0) - 96
+    let Y_Coords = parseFloat(l[1])
+
+    for (let i = X_Coords + 1; i <= 8; i++) {
+        
+        let isEmpty = checkAvailability(i, Y_Coords)
+        if (isEmpty) break
+    }
+
+    for (let i = X_Coords - 1; i > 0; i--) {
+        
+        let isEmpty = checkAvailability(i, Y_Coords)
+        if (isEmpty) break
+    }
+    for (let i = Y_Coords + 1; i <= 8; i++) {
+        
+        let isEmpty = checkAvailability(X_Coords, i)
+        if (isEmpty) break
+    }
+    for (let i = Y_Coords - 1; i > 0; i--) {
+        
+        let isEmpty = checkAvailability(X_Coords, i)
+        if (isEmpty) break
+    }
+    
+}
+
+</script>
 </html>
