@@ -1,11 +1,10 @@
-import {locateTile,checkAvailability} from "../script.js"
+import {checkAvailability, checkForCheckmate} from "../script.js"
 
-let id = ''
 let X_Coords = ''
 let Y_Coords = ''
 
-export function determineKnightMoves(i, l) {
-    id = i
+export function determineKnightMoves(i, l, purpose) {
+    let c = i.dataset.colour
     X_Coords = l.charCodeAt(0) - 96
     Y_Coords = parseFloat(l[1])
 
@@ -45,7 +44,7 @@ export function determineKnightMoves(i, l) {
 
     locations.forEach(loc => {
         if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
-        checkAvailability(loc.x, loc.y)
+        (purpose == 'checkmate')? checkForCheckmate(c, loc.x, loc.y): checkAvailability(loc.x, loc.y);
     })
 
 }

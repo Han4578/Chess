@@ -1,4 +1,4 @@
-import pieces from "./pieces.json" assert {type: 'json'};
+import jsonPieces from "./pieces.json" assert {type: 'json'};
 import {determineRookMoves} from "./pieceFunctions/rook.js" ;
 import {determineBishopMoves} from "./pieceFunctions/bishop.js" ;
 import {determineQueenMoves} from "./pieceFunctions/queen.js" ;
@@ -43,7 +43,7 @@ const setupBoard = {
 }
 
 function startGame() {
-    pieces.forEach(p => {
+    jsonPieces.forEach(p => {
         p.location.forEach(l => {
             var piece = document.createElement('img')
             piece.src = p.src
@@ -53,7 +53,7 @@ function startGame() {
             piece.setAttribute("draggable", true)
             piece.classList.add('piece')
             if (p.type == "rook" || p.type == "king") piece.dataset.canCastle = true
-
+            
             Array.from(board.children).forEach(tile => {
                 if (tile.dataset.number == l) {
                     tile.appendChild(piece)
@@ -61,26 +61,29 @@ function startGame() {
                 }
             })
         })
+
     })
 }
 setupBoard.setup()
 //------------------------------------------------------------------------------------------------------------------------------
 
-export let piece = Array.from(document.getElementsByClassName('piece'))
+export let pieces = Array.from(document.getElementsByClassName('piece'))
 let tile = Array.from(document.getElementsByClassName('tile'))
 let possibleMoves = Array.from(document.getElementsByClassName('possible'))
 let turn = 'white'
 let currentPiece = ''
-let selectedPiece = ''
+let selectedPieceId = ''
 let colour
 let hasTurns = true
+let w_checked = false
+let b_checked = false
 
 changeTurn()
 
-piece.forEach(p => {
+pieces.forEach(p => {
 
     p.addEventListener("dragstart", selectPiece)
-    p.addEventListener("click",selectPiece)
+    p.addEventListener("click", selectPiece)
 
     function selectPiece(e) {
         possibleMoves = Array.from(document.getElementsByClassName('possible'))
@@ -88,10 +91,13 @@ piece.forEach(p => {
             t.classList.remove('possible')
         }) //removes previous possible moves
 
-        if (selectedPiece == e.target.id) {
-            selectedPiece = ''
+        if (selectedPieceId == e.target.id) {
+            selectedPieceId = ''
             p.parentElement.classList.remove('selected') //cancels selection when same piece is selected
-            tile.forEach(t => {t.dataset.firstMove = false})
+            tile.forEach(t => {
+                t.dataset.firstMove = false
+                t.dataset.castle = false
+            })
             return
         }
 
@@ -103,10 +109,10 @@ piece.forEach(p => {
         }
 
         p.parentElement.classList.add('selected') //selects current piece
-        selectedPiece = e.target.id
+        selectedPieceId = e.target.id
         currentPiece = e.target
         colour = e.target.dataset.colour
-        determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'move')
+        determinePieceType(currentPiece, currentPiece.parentElement.dataset.number)
         e.stopPropagation()
 
     }
@@ -114,73 +120,80 @@ piece.forEach(p => {
 })
 
 tile.forEach(t => {
-        t.addEventListener("drop", dropPiece)
-        t.addEventListener("click", dropPiece)
+    t.addEventListener("drop", dropPiece)
+    t.addEventListener("click", dropPiece)
 
-        t.addEventListener("dragover", (e) => {
-            e.preventDefault()
+    t.addEventListener("dragover", (e) => {
+        e.preventDefault()
+    })
+
+    function dropPiece(e) {
+        let target = e.target
+        if (selectedPieceId == '' || !(target.classList.contains('possible'))) return
+
+        let droppedPiece = document.getElementById(selectedPieceId)
+        pieces.forEach(p => {
+            p.dataset.firstMove = false
+        })
+        target.appendChild(droppedPiece);
+
+        if (target.dataset.firstMove == 'true') {
+            droppedPiece.dataset.firstMove = true
+            target.dataset.firstMove = false
+        }
+
+        if (droppedPiece.dataset.canCastle == 'true' && target.dataset.castle !== 'true') droppedPiece.dataset.canCastle = false
+
+        selectedPieceId = '';
+        if (target.children.length > 1) {
+            let index = pieces.indexOf(target.firstChild)
+            pieces.splice(index, 1)
+            target.removeChild(target.firstChild)
+
+        }
+
+        if (target.dataset.castle == 'true') castle(target.dataset.number, droppedPiece)
+        if (droppedPiece.dataset.checked == 'true') droppedPiece.dataset.checked = false
+
+        tile.forEach(t => {
+            t.classList.remove('possible')
+            t.classList.remove('selected')
+            t.dataset.firstMove = false
+            t.dataset.castle = false
+            if (t.classList.contains('en-passanted')) {
+                t.removeChild(t.firstChild)
+                t.classList.remove('en-passanted')
+            }
+            (Array.from(t.children).length == 1) ? t.dataset.hasPiece = true: t.dataset.hasPiece = false
         })
 
-        function dropPiece(e) {
-            let t = e.target
-            if (selectedPiece == '' || !(t.classList.contains('possible'))) return
-            
-            let droppedPiece = document.getElementById(selectedPiece)
-            piece.forEach(p => {p.dataset.firstMove = false})
-            t.appendChild(droppedPiece);
-            
-            if(t.dataset.firstMove == 'true') {
-                droppedPiece.dataset.firstMove = true
-                t.dataset.firstMove = false
-            }
-            
-            if (droppedPiece.dataset.canCastle == 'true' && t.dataset.castle !== 'true') droppedPiece.dataset.canCastle = false
-            
-            selectedPiece = '';
-            (t.children.length > 1) ? t.removeChild(t.firstChild): ""
-            
-            if (t.dataset.castle == 'true') castle(t.dataset.number, droppedPiece)
-            
-            tile.forEach(t => {
-                t.classList.remove('possible')
-                t.classList.remove('selected')
-                t.dataset.firstMove = false
-                t.dataset.castle = false
-                if (t.classList.contains('en-passanted')) {
-                    t.removeChild(t.firstChild)
-                    t.classList.remove('en-passanted')
-                }
-                (Array.from(t.children).length == 1)? t.dataset.hasPiece = true : t.dataset.hasPiece = false
-                t.dataset.checkable = false
-            })
 
-            
-            // determinePieceType(currentPiece, currentPiece.parentElement.dataset.number,'checkmate')
-            changeTurn()
-        }
-    })
-    
+        refreshCheckableTiles()
+        changeTurn()
+    }
+})
 
-function determinePieceType(piece,location, purpose) {
-    
+
+function determinePieceType(piece, location) {
+
     switch (piece.dataset.type) {
         case "rook":
-            determineRookMoves(piece, location, purpose);
+            determineRookMoves(piece, location, 'move', w_checked, b_checked);
             break
         case "bishop":
-            determineBishopMoves(piece, location, purpose);
+            determineBishopMoves(piece, location, 'move', w_checked, b_checked);
             break
         case "queen":
-            determineQueenMoves(piece, location, purpose);
+            determineQueenMoves(piece, location, 'move', w_checked, b_checked);
             break
         case "knight":
-            determineKnightMoves(piece, location, purpose);
+            determineKnightMoves(piece, location, 'move', w_checked, b_checked);
             break
         case "king":
-            determineKingMoves(piece, location, purpose);
+            determineKingMoves(piece, location, 'move', w_checked, b_checked);
             break
         case "pawn":
-            determinePawnMoves(piece, location, purpose);
+            determinePawnMoves(piece, location, 'move', w_checked, b_checked);
             break
 
         default:
@@ -193,13 +206,12 @@ export function checkAvailability(x, y) {
     let correspondingTile = locateTile(x, y)
     if (Array.from(correspondingTile.children).length == 0) {
         correspondingTile.classList.add('possible')
-        return false
-    } else {
-        if (correspondingTile.firstElementChild.dataset.colour !== colour) {
-            correspondingTile.classList.add('possible')
-            return true
-        } else return true
-    }
+        return false //no piece on tile
+    } else if (correspondingTile.firstElementChild.dataset.colour !== colour) {
+        correspondingTile.classList.add('possible')
+        return true //enemy on tile
+    } else return true //ally on tile
+
 }
 
 export function locateTile(x, y) {
@@ -212,24 +224,82 @@ export function locateTile(x, y) {
     return result
 }
 
-export function checkForCheckmate(c){
-    
+export function checkForCheckmate(c, x, y) {
+
     let correspondingTile = locateTile(x, y)
     if (Array.from(correspondingTile.children).length == 0) {
-        correspondingTile.dataset.checkable = true
-    } else if (correspondingTile.firstChildElement.dataset.type == 'king' && correspondingTile.firstChildElement.dataset.colour !== c){
-        tile.forEach(t => {
-            //find the king and set it as checked
-        })
-    }
+        (c == 'white') ? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
+        return false //no pieces on tile
+    } else if (correspondingTile.firstChild.dataset.type == 'king' && correspondingTile.firstChild.dataset.colour !== c) {
+        correspondingTile.firstChild.dataset.checked = true;
+        w_checked = false;
+        b_checked = false;
+        (c == 'white') ? w_checked = true: b_checked = true;
+        return false //enemy king found
+    } else if (correspondingTile.firstChild.dataset.colour !== c) {
+        (c == 'white') ? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
+        return true //enemy found
+    } else return true
 }
 
-function changeTurn(){
-    piece.forEach(p => {
-        (p.dataset.colour !== turn)?p.style.pointerEvents = 'none':p.style.pointerEvents = 'auto';
+export function simulateMove(x, y, piece) {
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        let imaginaryPiece = document.createElement(div)
+        imaginaryPiece.classList.add('imaginary')
+        correspondingTile.appendChild(imaginaryPiece)
+        refreshCheckableTiles()
+        if(piece.dataset.colour == 'white' && !w_checked){
+            correspondingTile.classList.add('possible')
+            
+        } else if(piece.dataset.colour == 'black' && !b_checked) {
+            correspondingTile.classList.add('possible')
+        }
+        correspondingTile.removeChild(imaginaryPiece)
+        return false //no piece on tile
+    } else if (correspondingTile.firstElementChild.dataset.colour !== colour) {
+        correspondingTile.classList.add('possible')
+        return true //enemy on tile
+    } else return true //ally on tile
+}
+
+function refreshCheckableTiles(){
+    tile.forEach(t => {
+        t.dataset.w_checkable = false
+        t.dataset.b_checkable = false
     })
-    if (!hasTurns) return
-    (turn == 'white')?turn = 'black':turn = 'white';
+    pieces.forEach(p => {
+        switch (p.dataset.type) {
+            case "rook":
+                determineRookMoves(p, p.parentElement.dataset.number, 'checkmate');
+                break
+            case "bishop":
+                determineBishopMoves(p, p.parentElement.dataset.number, 'checkmate');
+                break
+            case "queen":
+                determineQueenMoves(p, p.parentElement.dataset.number, 'checkmate');
+                break
+            case "knight":
+                determineKnightMoves(p, p.parentElement.dataset.number, 'checkmate');
+                break
+            case "pawn":
+                determinePawnMoves(p, p.parentElement.dataset.number, 'checkmate');
+                break
+            case "king":
+                determineKingMoves(p, p.parentElement.dataset.number, 'checkmate');
+                break
+            default:
+                break
+        }
+    })
+}
+
+function changeTurn() {
+    pieces.forEach(p => {
+        (p.dataset.colour !== turn) ? p.style.pointerEvents = 'none': p.style.pointerEvents = 'auto';
+    })
+    if (!hasTurns) return 
+    (turn == 'white') ? turn = 'black' : turn = 'white';
 }
 
 reverseBtn.addEventListener('click', () => {

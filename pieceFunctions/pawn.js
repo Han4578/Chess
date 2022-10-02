@@ -1,18 +1,25 @@
+import { checkForCheckmate } from "../script.js";
+
 let X_Coords = ''
 let Y_Coords = ''
 let colour
+let p
 
 export function determinePawnMoves(piece, l, purpose) {
     X_Coords = l.charCodeAt(0) - 96
     Y_Coords = parseFloat(l[1]);
     colour = piece.dataset.colour;
+    p = purpose;
 
     (colour == 'white') ? whiteMove(): blackMove();
 }
 
 function whiteMove() {
     if (Y_Coords == 8) return
-
+    if(p == 'checkmate'){
+        checkForEnemy(X_Coords, Y_Coords + 1)
+        return
+    }
     checkAvailability(X_Coords, Y_Coords + 1)
     checkForEnemy(X_Coords, Y_Coords + 1)
     checkForEnPassantW(X_Coords, Y_Coords)
@@ -21,7 +28,10 @@ function whiteMove() {
 
 function blackMove() {
     if (Y_Coords == 0) return
-
+    if(p == 'checkmate'){
+        checkForEnemy(X_Coords, Y_Coords - 1)
+        return
+    }
     checkAvailability(X_Coords, Y_Coords - 1)
     checkForEnemy(X_Coords, Y_Coords - 1)
     checkForEnPassantB(X_Coords, Y_Coords)
@@ -62,10 +72,12 @@ function checkForEnemy(x, y) {
     let rightTile = locateTile(right, y)
 
     if (left < 9 && left > 0) {
-        if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.colour !== colour) leftTile.classList.add('possible');
+        if (p == 'checkmate') checkForCheckmate(colour, left, y)
+        else if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.colour !== colour) leftTile.classList.add('possible');
     }
     if (right < 9 && right > 0) {
-        if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.colour !== colour) rightTile.classList.add('possible');
+        if (p == 'checkmate') checkForCheckmate(colour, right, y)
+        else if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.colour !== colour) rightTile.classList.add('possible');
     }
 }
 

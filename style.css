@@ -45,6 +45,23 @@
     height: 80%;
 }
 
+.imaginary{
+    background-color: transparent;
+    width: 1px;
+    height: 1px;
+}
+
+[data-b_checkable = 'true'] {
+    background-color: rgb(246, 117, 117) !important;
+}
+[data-w_checkable = 'true'] {
+    background-color: rgb(117, 164, 246) !important;
+}
+
+[data-w_checkable = 'true'][data-b_checkable = 'true'] {
+    background-color: rgb(240, 117, 246) !important;
+}
+
 .selected{
     background-color: aquamarine !important;
 }
