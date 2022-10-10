@@ -1,12 +1,14 @@
-import {checkAvailability, checkForCheckmate} from "../script.js"
+import {checkAvailability, checkForCheckmate, simulateMove} from "../script.js"
 
 let X_Coords = ''
 let Y_Coords = ''
 
-export function determineKnightMoves(i, l, purpose) {
-    let c = i.dataset.colour
+export function determineKnightMoves(piece, l, purpose, w_being_checked, b_being_checked) {
+    let c = piece.dataset.colour
     X_Coords = l.charCodeAt(0) - 96
     Y_Coords = parseFloat(l[1])
+    if (purpose == 'move' && ((c == 'white' && w_being_checked == true) || (c == 'black' && b_being_checked == true))) purpose = 'checked';
+
 
     let L1 = {
         x: X_Coords - 1,
@@ -44,7 +46,20 @@ export function determineKnightMoves(i, l, purpose) {
 
     locations.forEach(loc => {
         if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
-        (purpose == 'checkmate')? checkForCheckmate(c, loc.x, loc.y): checkAvailability(loc.x, loc.y);
+
+        switch (purpose) {
+            case 'checkmate':
+                checkForCheckmate(c, loc.x, loc.y)
+                break;
+            case 'move':
+                checkAvailability(loc.x, loc.y)
+                break;
+            case 'checked':
+                simulateMove(loc.x, loc.y, piece)
+                break;
+            default:
+                break;
+        }
     })
 
 }

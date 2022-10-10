@@ -5,8 +5,8 @@ let X_Coords = ''
 let Y_Coords = ''
 let colour = ''
 let purp
-let w_checked = false
-let b_checked = false
+let w_being_checked = false
+let b_being_checked = false
 
 export function determineKingMoves(piece, l, purpose, w, b) {
     p = piece
@@ -14,8 +14,8 @@ export function determineKingMoves(piece, l, purpose, w, b) {
     Y_Coords = parseFloat(l[1])
     colour = piece.dataset.colour
     purp = purpose
-    w_checked = w
-    b_checked = b
+    w_being_checked = w
+    b_being_checked = b
 
     let L1 = {
         x: X_Coords,
@@ -55,7 +55,7 @@ export function determineKingMoves(piece, l, purpose, w, b) {
         if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
 
         if (purpose == 'checkmate') {
-            checkForCheckmate(p.dataset.colour, loc.x, loc.y)
+            checkForCheckmate(colour, loc.x, loc.y)
             return
         }
 
@@ -73,6 +73,10 @@ export function determineKingMoves(piece, l, purpose, w, b) {
 
 function checkForCastle() {
     if (p.dataset.canCastle !== 'true' || purp == 'checkmate') return
+    
+    if (colour == 'white') {
+        if (w_being_checked) return
+    } else if (b_being_checked) return
 
     let rooks = pieces.filter(p => {
         return (p.dataset.colour == colour && p.dataset.canCastle == 'true' && p.dataset.type == 'rook')

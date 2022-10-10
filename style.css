@@ -46,11 +46,11 @@
 }
 
 .imaginary{
-    background-color: transparent;
+    background-color: green;
     width: 1px;
     height: 1px;
 }
-
+/* 
 [data-b_checkable = 'true'] {
     background-color: rgb(246, 117, 117) !important;
 }
@@ -60,7 +60,7 @@
 
 [data-w_checkable = 'true'][data-b_checkable = 'true'] {
     background-color: rgb(240, 117, 246) !important;
-}
+} */
 
 .selected{
     background-color: aquamarine !important;

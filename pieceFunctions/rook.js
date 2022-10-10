@@ -1,13 +1,13 @@
 import {checkAvailability, checkForCheckmate, simulateMove} from "../script.js"
 
-export function determineRookMoves(piece, location, purpose, w_checked, b_checked) {
+export function determineRookMoves(piece, location, purpose, w_being_checked, b_being_checked) {
     let c = piece.dataset.colour
     let X_Coords = location.charCodeAt(0) - 96
     let Y_Coords = parseFloat(location[1])
-    if ((c == 'white' && w_checked == true) || (c == 'black' && b_checked == true)) purpose = 'checked';
-
+    let isOccupied = false
+    if (purpose == 'move' && ((c == 'white' && w_being_checked == true) || (c == 'black' && b_being_checked == true))) purpose = 'checked';
     for (let i = X_Coords + 1; i <= 8; i++) {
-        let isOccupied = false
+
         switch (purpose) {
             case 'checkmate':
                 isOccupied = checkForCheckmate(c, i, Y_Coords)
@@ -16,7 +16,7 @@ export function determineRookMoves(piece, location, purpose, w_checked, b_checke
                 isOccupied = checkAvailability(i, Y_Coords)
                 break;
             case 'checked':
-                isOccupied = simulateMove(i, Y_Coords, piece);
+                isOccupied = simulateMove(i, Y_Coords, piece)
                 break;
             default:
                 break;
@@ -25,29 +25,54 @@ export function determineRookMoves(piece, location, purpose, w_checked, b_checke
     }
 
     for (let i = X_Coords - 1; i > 0; i--) {
-        if(purpose == 'checkmate'){
-            checkForCheckmate(c, i, Y_Coords)
-            continue
+
+        switch (purpose) {
+            case 'checkmate':
+                isOccupied = checkForCheckmate(c, i, Y_Coords)
+                break;
+            case 'move':
+                isOccupied = checkAvailability(i, Y_Coords)
+                break;
+            case 'checked':
+                isOccupied = simulateMove(i, Y_Coords, piece)
+                break;
+            default:
+                break;
         }
-        let isOccupied = checkAvailability(i, Y_Coords)
         if (isOccupied) break
     }
-    for (let i = Y_Coords + 1; i <= 8; i++) {
-        if(purpose == 'checkmate'){
-            let isOccupied = checkForCheckmate(c, X_Coords, i)
-            if (isOccupied) break;
-            continue
+    for (let i = Y_Coords + 1; i < 9; i++) {
+
+        switch (purpose) {
+            case 'checkmate':
+                isOccupied = checkForCheckmate(c, X_Coords, i)
+                break;
+            case 'move':
+                isOccupied = checkAvailability(X_Coords, i)
+                break;
+            case 'checked':
+                isOccupied = simulateMove(X_Coords, i, piece)
+                break;
+            default:
+                break;
         }
-        let isOccupied = checkAvailability(X_Coords, i)
         if (isOccupied) break
     }
     for (let i = Y_Coords - 1; i > 0; i--) {
-        if(purpose == 'checkmate'){
-            let isOccupied = checkForCheckmate(c, X_Coords, i)
-            if (isOccupied) break;
-            continue
+
+        switch (purpose) {
+            case 'checkmate':
+                isOccupied = checkForCheckmate(c, X_Coords, i)
+                break;
+            case 'move':
+                isOccupied = checkAvailability(X_Coords, i)
+                break;
+            case 'checked':
+                isOccupied = simulateMove(X_Coords, i, piece)
+                break;
+            default:
+                break;
         }
-        let isOccupied = checkAvailability(X_Coords, i)
         if (isOccupied) break
     }
     
