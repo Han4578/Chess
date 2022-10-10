@@ -4,15 +4,11 @@
     box-sizing: border-box;
 }
 
-/* body{
-    
-} */
-
 #board{
     border: 4px #666 solid;
     display: flex;
     flex-wrap: wrap;
-    width: 40%;
+    width: 30%;
     aspect-ratio: 1;
     margin: 0 auto;
     margin-top: 2rem;
@@ -50,17 +46,17 @@
     width: 1px;
     height: 1px;
 }
-/* 
-[data-b_checkable = 'true'] {
-    background-color: rgb(246, 117, 117) !important;
-}
-[data-w_checkable = 'true'] {
-    background-color: rgb(117, 164, 246) !important;
-}
 
-[data-w_checkable = 'true'][data-b_checkable = 'true'] {
-    background-color: rgb(240, 117, 246) !important;
-} */
+.winner {
+    display: none;
+    width: 80%;
+    height: 30vh;
+    background-color: yellow;
+    margin: 5vh auto;
+    align-items: center;
+    justify-content: center;
+    font-size: 10vh;
+}
 
 .selected{
     background-color: aquamarine !important;

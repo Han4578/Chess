@@ -57,7 +57,6 @@ function startGame() {
             Array.from(board.children).forEach(tile => {
                 if (tile.dataset.number == l) {
                     tile.appendChild(piece)
-                    tile.dataset.hasPiece = true
                 }
             })
         })
@@ -75,8 +74,8 @@ let currentPiece = ''
 let selectedPieceId = ''
 let colour
 let hasTurns = true
-let w_being_checked = false //w checks b
-let b_being_checked = false //b checks w
+export let w_being_checked = false //w checks b
+export let b_being_checked = false //b checks w
 let gameEnded = false
 
 changeTurn()
@@ -98,6 +97,9 @@ pieces.forEach(p => {
             tile.forEach(t => {
                 t.dataset.firstMove = false
                 t.dataset.castle = false
+            })
+            pieces.forEach(p => {
+                p.classList.remove('en-passanted')
             })
             return
         }
@@ -138,6 +140,11 @@ tile.forEach(t => {
         let droppedPiece = document.getElementById(selectedPieceId)
         pieces.forEach(p => {
             p.dataset.firstMove = false
+            if (p.classList.contains('en-passanted')) {
+                p.remove()
+                let index = pieces.indexOf(p)
+                pieces.splice(index, 1)
+            }
         })
         target.appendChild(droppedPiece);
 
@@ -154,7 +161,6 @@ tile.forEach(t => {
             pieces.splice(index, 1)
             target.removeChild(target.firstChild)
         }
-
         if (target.dataset.castle == 'true') castle(target.dataset.number, droppedPiece)
         if (droppedPiece.dataset.checked == 'true') droppedPiece.dataset.checked = false
 
@@ -162,18 +168,12 @@ tile.forEach(t => {
             t.classList.remove('possible')
             t.classList.remove('selected')
             t.dataset.firstMove = false
-            t.dataset.castle = false
-            if (t.classList.contains('en-passanted')) {
-                t.removeChild(t.firstChild)
-                t.classList.remove('en-passanted')
-            }
-            (Array.from(t.children).length == 1) ? t.dataset.hasPiece = true: t.dataset.hasPiece = false
         })
 
 
         refreshCheckableTiles()
-        if (w_being_checked) checkPossibleMoves('w') 
-        else if (b_being_checked) checkPossibleMoves('b')
+        if (w_being_checked) checkPossibleMoves('white') 
+        else if (b_being_checked) checkPossibleMoves('black')
         changeTurn()
     }
 })
@@ -252,7 +252,7 @@ export function checkForCheckmate(c, x, y) {
     }
 }
 
-export function simulateMove(x, y, piece, purpose) {
+export function simulateMove(x, y, piece, purpose = 'move') {
     let original = [w_being_checked,b_being_checked]
     w_being_checked = false
     b_being_checked = false
@@ -263,20 +263,20 @@ export function simulateMove(x, y, piece, purpose) {
         correspondingTile.appendChild(imaginaryPiece)
         refreshCheckableTiles()
         if((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
-            if (purpose !== 'checkMoves') correspondingTile.classList.add('possible')
+            if (purpose != 'checkMoves') correspondingTile.classList.add('possible')
             else gameEnded = false
         }
         correspondingTile.removeChild(imaginaryPiece);
         w_being_checked = original[0];
         b_being_checked = original[1];
         return false //no piece on tile
-
-    } else if (correspondingTile.firstElementChild.dataset.colour !== colour) {
+        
+    } else if (correspondingTile.firstElementChild.dataset.colour !== piece.dataset.colour) {
         let enemyPiece = correspondingTile.firstElementChild
         correspondingTile.removeChild(enemyPiece)
         refreshCheckableTiles()
         if((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
-            if (purpose !== 'checkMoves') correspondingTile.classList.add('possible')
+            if (purpose != 'checkMoves') correspondingTile.classList.add('possible')
             else gameEnded = false
         }
         correspondingTile.appendChild(enemyPiece)
@@ -296,6 +296,8 @@ export function refreshCheckableTiles(){
         t.dataset.w_checkable = false
         t.dataset.b_checkable = false
     })
+    w_being_checked = false
+    b_being_checked = false
     pieces = Array.from(document.getElementsByClassName('piece'))
     pieces.forEach(p => {
         switch (p.dataset.type) {
@@ -339,9 +341,11 @@ function checkMovablity(piece) {
 
 function checkPossibleMoves(c) {
     gameEnded = true
+    let kingMovability
 
     pieces = Array.from(document.getElementsByClassName('piece'))
     pieces.forEach(p => {
+        if (p.dataset.colour !== c) return
         switch (p.dataset.type) {
             case "rook":
                 determineRookMoves(p, p.parentElement.dataset.number, 'checkMoves');
@@ -359,12 +363,14 @@ function checkPossibleMoves(c) {
                 determinePawnMoves(p, p.parentElement.dataset.number, 'checkMoves');
                 break
             case "king":
-                determineKingMoves(p, p.parentElement.dataset.number, 'checkMoves');
+                kingMovability = determineKingMoves(p, p.parentElement.dataset.number, 'checkMoves');
                 break
             default:
                 break
         }
     })
+
+    if (gameEnded && !kingMovability) endGame(c)
 }
 
 function changeTurn() {
@@ -380,3 +386,13 @@ function changeTurn() {
 reverseBtn.addEventListener('click', () => {
     board.classList.toggle('reverse')
 })
+
+function endGame(c) {
+    let winner = (c == 'white')? 'black' : 'white';
+    let winnerBoard = doc.querySelector('.winner')
+    winnerBoard.innerHTML = 'Winner: ' + winner
+    winnerBoard.style.display = 'flex'
+    pieces.forEach(p => {
+        p.style.pointerEvents = 'none'
+    })
+}

@@ -1,21 +1,18 @@
-import {checkAvailability, pieces, locateTile, checkForCheckmate} from "../script.js"
+import {pieces, locateTile, checkForCheckmate, w_being_checked, b_being_checked} from "../script.js"
 
 let p = ''
 let X_Coords = ''
 let Y_Coords = ''
 let colour = ''
 let purp
-let w_being_checked = false
-let b_being_checked = false
 
-export function determineKingMoves(piece, l, purpose, w, b) {
+export function determineKingMoves(piece, l, purpose) {
     p = piece
     X_Coords = l.charCodeAt(0) - 96
     Y_Coords = parseFloat(l[1])
     colour = piece.dataset.colour
     purp = purpose
-    w_being_checked = w
-    b_being_checked = b
+    let movable = false
 
     let L1 = {
         x: X_Coords,
@@ -65,15 +62,31 @@ export function determineKingMoves(piece, l, purpose, w, b) {
             if (correspondingTile.dataset.b_checkable == 'true') return
         } else if (correspondingTile.dataset.w_checkable == 'true') return
 
-        checkAvailability(loc.x, loc.y)
+        let moves = checkAvailability(loc.x, loc.y);
+        if (moves) movable = true
     })
 
     checkForCastle()
+    return movable
+}
+
+function checkAvailability(x, y) {
+    let correspondingTile = locateTile(x, y)
+    if (Array.from(correspondingTile.children).length == 0) {
+        if (purp != 'checkMoves') correspondingTile.classList.add('possible')
+        return true //no piece on tile
+
+    } else if (correspondingTile.firstElementChild.dataset.colour !== colour) {
+        if (purp != 'checkMoves') correspondingTile.classList.add('possible')
+        return true //enemy on tile
+
+    } else return false //ally on tile
+
 }
 
 function checkForCastle() {
     if (p.dataset.canCastle !== 'true' || purp == 'checkmate') return
-    
+
     if (colour == 'white') {
         if (w_being_checked) return
     } else if (b_being_checked) return
@@ -131,5 +144,6 @@ export function castle(tileNum, king){
         rookTile = locateTile(6, y)
     }
     rookTile.appendChild(rook)
+    console.log('castled');
     king.dataset.canCastle = false
 }

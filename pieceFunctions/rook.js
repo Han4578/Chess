@@ -1,6 +1,6 @@
-import {checkAvailability, checkForCheckmate, simulateMove} from "../script.js"
+import {checkAvailability, checkForCheckmate, simulateMove, w_being_checked, b_being_checked} from "../script.js"
 
-export function determineRookMoves(piece, location, purpose, w_being_checked, b_being_checked) {
+export function determineRookMoves(piece, location, purpose) {
     let c = piece.dataset.colour
     let X_Coords = location.charCodeAt(0) - 96
     let Y_Coords = parseFloat(location[1])
@@ -17,6 +17,9 @@ export function determineRookMoves(piece, location, purpose, w_being_checked, b_
                 break;
             case 'checked':
                 isOccupied = simulateMove(i, Y_Coords, piece)
+                break;
+            case 'checkMoves':
+                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
                 break;
             default:
                 break;
@@ -36,6 +39,9 @@ export function determineRookMoves(piece, location, purpose, w_being_checked, b_
             case 'checked':
                 isOccupied = simulateMove(i, Y_Coords, piece)
                 break;
+            case 'checkMoves':
+                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
+                break;
             default:
                 break;
         }
@@ -53,6 +59,9 @@ export function determineRookMoves(piece, location, purpose, w_being_checked, b_
             case 'checked':
                 isOccupied = simulateMove(X_Coords, i, piece)
                 break;
+            case 'checkMoves':
+                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
+                break;
             default:
                 break;
         }
@@ -69,6 +78,9 @@ export function determineRookMoves(piece, location, purpose, w_being_checked, b_
                 break;
             case 'checked':
                 isOccupied = simulateMove(X_Coords, i, piece)
+                break;
+            case 'checkMoves':
+                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
                 break;
             default:
                 break;

@@ -1,6 +1,6 @@
-import { checkForCheckmate, simulateMove, refreshCheckableTiles, locateTile } from "../script.js";
+import { checkForCheckmate, simulateMove, refreshCheckableTiles, locateTile, w_being_checked, b_being_checked } from "../script.js";
 
-export function determinePawnMoves(piece, location, purpose, w_being_checked, b_being_checked) {
+export function determinePawnMoves(piece, location, purpose) {
     let X_Coords = location.charCodeAt(0) - 96
     let Y_Coords = parseFloat(location[1]);
     let colour = piece.dataset.colour;
@@ -17,10 +17,10 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
             return
         }
 
-        checkAvailability(X_Coords, Y_Coords + 1)
+        let isPossible = checkAvailability(X_Coords, Y_Coords + 1)
         checkForEnemy(X_Coords, Y_Coords + 1)
         checkForEnPassantW(X_Coords, Y_Coords)
-        if (Y_Coords == 2) specialTile(X_Coords, Y_Coords + 2)
+        if (Y_Coords == 2 && isPossible) specialTile(X_Coords, Y_Coords + 2)
 
 
     }
@@ -33,10 +33,10 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
             return
         }
 
-        checkAvailability(X_Coords, Y_Coords - 1)
+        let isPossible = checkAvailability(X_Coords, Y_Coords - 1)
         checkForEnemy(X_Coords, Y_Coords - 1)
         checkForEnPassantB(X_Coords, Y_Coords)
-        if (Y_Coords == 7) specialTile(X_Coords, Y_Coords - 2)
+        if (Y_Coords == 7 && isPossible) specialTile(X_Coords, Y_Coords - 2)
 
     }
 
@@ -46,7 +46,7 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
             correspondingTile.dataset.firstMove = true
 
             if (purpose == 'move') correspondingTile.classList.add('possible')
-            else if (purpose == 'checked') simulateMove(x, y, pawn)
+            else if (purpose == 'checked' || purpose == 'checkMoves') simulateMove(x, y, pawn, purpose)
         }
     }
 
@@ -55,10 +55,11 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
         if (Array.from(correspondingTile.children).length == 0) {
 
             if (purpose == 'move') correspondingTile.classList.add('possible')
-            else if (purpose == 'checked') {
-                simulateMove(x, y, pawn)
+            else if (purpose == 'checked' || purpose == 'checkMoves') {
+                simulateMove(x, y, pawn, purpose)
             }
-        }
+            return true
+        } else return false
     }
 
 
@@ -77,6 +78,9 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
                     case 'checked':
                         simulateMove(left, y, pawn)
                         break;
+                    case 'checkMoves':
+                        simulateMove(left, y, pawn, 'checkMoves')
+                        break;
                     default:
                         break;
                 }
@@ -91,6 +95,9 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
                         break;
                     case 'checked':
                         simulateMove(right, y, pawn)
+                        break;
+                    case 'checkMoves':
+                        simulateMove(right, y, pawn, 'checkMoves')
                         break;
                     default:
                         break;
@@ -108,10 +115,10 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
         if (left < 9 && left > 0) {
             if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
                 let tile = locateTile(left, y - 1)
+                leftTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
                     tile.classList.add('possible')
-                    leftTile.firstElementChild.classList.add('en-passanted')
-                } else simulateMove(left, y - 1, pawn)
+                } else simulateMove(left, y - 1, pawn, purpose)
 
             }
         }
@@ -119,10 +126,10 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
         if (right < 9 && right > 0) {
             if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
                 let tile = locateTile(right, y - 1)
+                leftTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
                     tile.classList.add('possible')
-                    leftTile.firstElementChild.classList.add('en-passanted')
-                } else simulateMove(left, y - 1, pawn)
+                } else simulateMove(left, y - 1, pawn, purpose)
             }
         }
     }
@@ -136,7 +143,7 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
         if (left < 9 && left > 0) {
             if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
                 let tile = locateTile(left, y + 1)
-                leftTile.classList.add('en-passanted')
+                leftTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
                     tile.classList.add('possible')
                 } else simulateEnPassantMoveW(left, y + 1, pawn)
@@ -145,7 +152,7 @@ export function determinePawnMoves(piece, location, purpose, w_being_checked, b_
         if (right < 9 && right > 0) {
             if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
                 let tile = locateTile(right, y + 1)
-                rightTile.classList.add('en-passanted')
+                rightTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
                     tile.classList.add('possible')
                 } else simulateEnPassantMoveW(left, y + 1, pawn)

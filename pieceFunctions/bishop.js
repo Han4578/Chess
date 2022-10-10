@@ -1,6 +1,6 @@
-import {checkAvailability, checkForCheckmate, simulateMove} from "../script.js"
+import {checkAvailability, checkForCheckmate, simulateMove, w_being_checked, b_being_checked} from "../script.js"
 
-export function determineBishopMoves(piece, l, purpose, w_being_checked, b_being_checked) {
+export function determineBishopMoves(piece, l, purpose) {
     let c = piece.dataset.colour
     let X_Coords = l.charCodeAt(0) - 96
     let Y_Coords = parseFloat(l[1])
@@ -24,6 +24,9 @@ export function determineBishopMoves(piece, l, purpose, w_being_checked, b_being
             case 'checked':
                 isOccupied = simulateMove(i, rightDown, piece)
                 break;
+            case 'checkMoves':
+                isOccupied = simulateMove(i, rightDown, piece, 'checkMoves')
+                break;
             default:
                 break;
         }
@@ -41,6 +44,9 @@ export function determineBishopMoves(piece, l, purpose, w_being_checked, b_being
                 break;
             case 'checked':
                 isOccupied = simulateMove(i, leftUp, piece)
+                break;
+            case 'checkMoves':
+                isOccupied = simulateMove(i, leftUp, piece, 'checkMoves')
                 break;
             default:
                 break;
@@ -60,6 +66,9 @@ export function determineBishopMoves(piece, l, purpose, w_being_checked, b_being
             case 'checked':
                 isOccupied = simulateMove(rightUp, i, piece)
                 break;
+            case 'checkMoves':
+                isOccupied = simulateMove(rightUp, i, piece, 'checkMoves')
+                break;
             default:
                 break;
         }
@@ -78,6 +87,9 @@ export function determineBishopMoves(piece, l, purpose, w_being_checked, b_being
                 break;
             case 'checked':
                 isOccupied = simulateMove(leftDown, i, piece)
+                break;
+            case 'checkMoves':
+                isOccupied = simulateMove(leftDown, i, piece, 'checkMoves')
                 break;
             default:
                 break;

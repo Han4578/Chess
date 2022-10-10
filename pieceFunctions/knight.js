@@ -1,9 +1,9 @@
-import {checkAvailability, checkForCheckmate, simulateMove} from "../script.js"
+import {checkAvailability, checkForCheckmate, simulateMove, w_being_checked, b_being_checked} from "../script.js"
 
 let X_Coords = ''
 let Y_Coords = ''
 
-export function determineKnightMoves(piece, l, purpose, w_being_checked, b_being_checked) {
+export function determineKnightMoves(piece, l, purpose) {
     let c = piece.dataset.colour
     X_Coords = l.charCodeAt(0) - 96
     Y_Coords = parseFloat(l[1])
@@ -56,6 +56,9 @@ export function determineKnightMoves(piece, l, purpose, w_being_checked, b_being
                 break;
             case 'checked':
                 simulateMove(loc.x, loc.y, piece)
+                break;
+            case 'checkMoves':
+                simulateMove(loc.x, loc.y, piece, 'checkMoves')
                 break;
             default:
                 break;
