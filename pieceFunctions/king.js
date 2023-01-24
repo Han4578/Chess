@@ -48,7 +48,7 @@ export function determineKingMoves(piece, l, purpose) {
     }
     let locations = [L1, L2, L3, L4, L5, L6, L7, L8]
 
-    locations.forEach(loc => {
+    for (const loc of locations) {
         if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
 
         if (purpose == 'checkmate') {
@@ -64,7 +64,7 @@ export function determineKingMoves(piece, l, purpose) {
 
         let moves = checkAvailability(loc.x, loc.y);
         if (moves) movable = true
-    })
+    }
 
     checkForCastle()
     return movable
@@ -100,7 +100,7 @@ function checkForCastle() {
     let castleLeft = false
     let castleRight = false
     
-    rooks.forEach(r => {
+    for (const r of rooks) {
         let count = true
 
         if (r.id == 'a1' || r.id == 'a8') {
@@ -118,7 +118,7 @@ function checkForCastle() {
             }
             if (count) castleRight = true
         }
-    })
+    }
     if (castleLeft == true){
         let correspondingTile = locateTile(X_Coords - 2, Y_Coords)
         correspondingTile.classList.add('possible')
@@ -144,6 +144,5 @@ export function castle(tileNum, king){
         rookTile = locateTile(6, y)
     }
     rookTile.appendChild(rook)
-    console.log('castled');
     king.dataset.canCastle = false
 }

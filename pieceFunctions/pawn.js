@@ -26,7 +26,7 @@ export function determinePawnMoves(piece, location, purpose) {
     }
 
     function blackMove() {
-        if (Y_Coords == 0) return
+        if (Y_Coords == 1) return
 
         if (purpose == 'checkmate') {
             checkForEnemy(X_Coords, Y_Coords - 1)
@@ -114,9 +114,10 @@ export function determinePawnMoves(piece, location, purpose) {
 
         if (left < 9 && left > 0) {
             if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
-                let tile = locateTile(left, y - 1)
-                leftTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
+                    let tile = locateTile(left, y - 1)
+                    leftTile.firstElementChild.classList.add('en-passanted')
+                    tile.classList.add('special')
                     tile.classList.add('possible')
                 } else simulateMove(left, y - 1, pawn, purpose)
 
@@ -125,9 +126,10 @@ export function determinePawnMoves(piece, location, purpose) {
 
         if (right < 9 && right > 0) {
             if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
-                let tile = locateTile(right, y - 1)
-                leftTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
+                    let tile = locateTile(right, y - 1)
+                    rightTile.firstElementChild.classList.add('en-passanted')
+                    tile.classList.add('special')
                     tile.classList.add('possible')
                 } else simulateMove(left, y - 1, pawn, purpose)
             }
@@ -142,18 +144,20 @@ export function determinePawnMoves(piece, location, purpose) {
 
         if (left < 9 && left > 0) {
             if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
-                let tile = locateTile(left, y + 1)
-                leftTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
+                    let tile = locateTile(left, y + 1)
+                    leftTile.firstElementChild.classList.add('en-passanted')
+                    tile.classList.add('special')
                     tile.classList.add('possible')
                 } else simulateEnPassantMoveW(left, y + 1, pawn)
             }
         }
         if (right < 9 && right > 0) {
             if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
-                let tile = locateTile(right, y + 1)
-                rightTile.firstElementChild.classList.add('en-passanted')
                 if (purpose == 'move') {
+                    let tile = locateTile(right, y + 1)
+                    rightTile.firstElementChild.classList.add('en-passanted')
+                    tile.classList.add('special')
                     tile.classList.add('possible')
                 } else simulateEnPassantMoveW(left, y + 1, pawn)
             }

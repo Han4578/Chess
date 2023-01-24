@@ -44,7 +44,7 @@ export function determineKnightMoves(piece, l, purpose) {
     }
     let locations = [L1,L2,L3,L4,L5,L6,L7,L8]
 
-    locations.forEach(loc => {
+    for (const loc of locations) {
         if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
 
         switch (purpose) {
@@ -63,6 +63,6 @@ export function determineKnightMoves(piece, l, purpose) {
             default:
                 break;
         }
-    })
+    }
 
 }

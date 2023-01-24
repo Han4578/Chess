@@ -16,10 +16,10 @@ export function determineRookMoves(piece, location, purpose) {
                 isOccupied = checkAvailability(i, Y_Coords)
                 break;
             case 'checked':
-                isOccupied = simulateMove(i, Y_Coords, piece)
+                isOccupied = simulateMove(i, Y_Coords, piece) 
                 break;
             case 'checkMoves':
-                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
+                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves') 
                 break;
             default:
                 break;
