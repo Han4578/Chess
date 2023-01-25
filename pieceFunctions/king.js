@@ -49,18 +49,17 @@ export function determineKingMoves(piece, l, purpose) {
     let locations = [L1, L2, L3, L4, L5, L6, L7, L8]
 
     for (const loc of locations) {
-        if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) return
-
+        if (loc.x > 8 || loc.x < 1 || loc.y > 8 || loc.y < 1) continue
         if (purpose == 'checkmate') {
             checkForCheckmate(colour, loc.x, loc.y)
-            return
+            continue
         }
 
         let correspondingTile = locateTile(loc.x, loc.y)
-
+        
         if (p.dataset.colour == 'white') {
-            if (correspondingTile.dataset.b_checkable == 'true') return
-        } else if (correspondingTile.dataset.w_checkable == 'true') return
+            if (correspondingTile.dataset.b_checkable == 'true') continue
+        } else if (correspondingTile.dataset.w_checkable == 'true') continue
 
         let moves = checkAvailability(loc.x, loc.y);
         if (moves) movable = true
@@ -72,12 +71,13 @@ export function determineKingMoves(piece, l, purpose) {
 
 function checkAvailability(x, y) {
     let correspondingTile = locateTile(x, y)
+    console.log(purp);
     if (Array.from(correspondingTile.children).length == 0) {
-        if (purp != 'checkMoves') correspondingTile.classList.add('possible')
+        if (purp !== 'checkMoves') correspondingTile.classList.add('possible')
         return true //no piece on tile
 
     } else if (correspondingTile.firstElementChild.dataset.colour !== colour) {
-        if (purp != 'checkMoves') correspondingTile.classList.add('possible')
+        if (purp !== 'checkMoves') correspondingTile.classList.add('possible')
         return true //enemy on tile
 
     } else return false //ally on tile

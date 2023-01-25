@@ -131,7 +131,7 @@ for (const p of pieces) {
         let isMovable = checkMovablity(currentPiece)
         if (!isMovable) return
 
-        determinePieceType(currentPiece, currentPiece.parentElement.dataset.number)
+        determineMoves(currentPiece.dataset.type, currentPiece, currentPiece.parentElement.dataset.number, 'move')
         e.stopPropagation()
 
     }
@@ -196,38 +196,10 @@ for (const t of tile) {
         refreshCheckableTiles()
         if (w_being_checked) checkPossibleMoves('white')
         else if (b_being_checked) checkPossibleMoves('black')
+        // else checkForStalemate()
         changeTurn()
     }
 }
-
-
-function determinePieceType(piece, location) {
-
-    switch (piece.dataset.type) {
-        case "rook":
-            determineRookMoves(piece, location, 'move', w_being_checked, b_being_checked);
-            break;
-        case "bishop":
-            determineBishopMoves(piece, location, 'move', w_being_checked, b_being_checked);
-            break;
-        case "queen":
-            determineQueenMoves(piece, location, 'move', w_being_checked, b_being_checked);
-            break;
-        case "knight":
-            determineKnightMoves(piece, location, 'move', w_being_checked, b_being_checked);
-            break;
-        case "king":
-            determineKingMoves(piece, location, 'move', w_being_checked, b_being_checked);
-            break;
-        case "pawn":
-            determinePawnMoves(piece, location, 'move', w_being_checked, b_being_checked);
-            break;
-
-        default:
-            return
-    }
-}
-
 
 export function checkAvailability(x, y) {
     let correspondingTile = locateTile(x, y)
@@ -313,37 +285,16 @@ export function simulateMove(x, y, piece, purpose = 'move') { //if i move here c
     } //ally on tile
 }
 
-export function refreshCheckableTiles() { //refresh where the king can't move
+export function refreshCheckableTiles(exception) { //refresh where the king can't move
     for (const t of tile) {
         t.dataset.w_checkable = false
         t.dataset.b_checkable = false
     }
     w_being_checked = false
     b_being_checked = false
-    pieces = Array.from(document.getElementsByClassName('piece'))
     for (const p of pieces) {
-        switch (p.dataset.type) {
-            case "rook":
-                determineRookMoves(p, p.parentElement.dataset.number, 'checkmate');
-                break
-            case "bishop":
-                determineBishopMoves(p, p.parentElement.dataset.number, 'checkmate');
-                break
-            case "queen":
-                determineQueenMoves(p, p.parentElement.dataset.number, 'checkmate');
-                break
-            case "knight":
-                determineKnightMoves(p, p.parentElement.dataset.number, 'checkmate');
-                break
-            case "pawn":
-                determinePawnMoves(p, p.parentElement.dataset.number, 'checkmate');
-                break
-            case "king":
-                determineKingMoves(p, p.parentElement.dataset.number, 'checkmate');
-                break
-            default:
-                break
-        }
+        if (p == exception) continue
+        determineMoves(p.dataset.type, p, p.parentElement.dataset.number, 'checkmate')
     }
 }
 
@@ -353,7 +304,7 @@ function checkMovablity(piece) { //if i move here will i be checked
     let result
 
     correspondingTile.removeChild(piece)
-    refreshCheckableTiles()
+    refreshCheckableTiles(piece)
 
     result = ((colour == 'white' && w_being_checked) || (colour == 'black' && b_being_checked)) ? false : true;
 
@@ -366,31 +317,14 @@ function checkPossibleMoves(c) { //when checked, can i still move
     gameEnded = true
     let kingMovability
 
-    pieces = Array.from(document.getElementsByClassName('piece'))
     for (const p of pieces) {
-        if (p.dataset.colour !== c) return
-        switch (p.dataset.type) {
-            case "rook":
-                determineRookMoves(p, p.parentElement.dataset.number, 'checkMoves');
-                break
-            case "bishop":
-                determineBishopMoves(p, p.parentElement.dataset.number, 'checkMoves');
-                break
-            case "queen":
-                determineQueenMoves(p, p.parentElement.dataset.number, 'checkMoves');
-                break
-            case "knight":
-                determineKnightMoves(p, p.parentElement.dataset.number, 'checkMoves');
-                break
-            case "pawn":
-                determinePawnMoves(p, p.parentElement.dataset.number, 'checkMoves');
-                break
-            case "king":
-                kingMovability = determineKingMoves(p, p.parentElement.dataset.number, 'checkMoves');
-                break
-            default:
-                break
+        if (p.dataset.colour !== c) continue
+        if (p.dataset.type == 'king') {
+            kingMovability = determineKingMoves(p, p.parentElement.dataset.number, 'checkMoves')
+            continue
         }
+        determineMoves(p.dataset.type, p, p.parentElement.dataset.number, 'checkMoves')
+        if (!gameEnded) break
     }
 
     if (gameEnded && !kingMovability) endGame(c)
@@ -453,6 +387,32 @@ function promote(piece) {
     if (w_being_checked) checkPossibleMoves('white')
     else if (b_being_checked) checkPossibleMoves('black')
     changeTurn()
+}
+
+function determineMoves(condition, piece, location, purpose) {
+    switch (condition) {
+        case "rook":
+            determineRookMoves(piece, location, purpose);
+            break
+        case "bishop":
+            determineBishopMoves(piece, location, purpose);
+            break
+        case "queen":
+            determineQueenMoves(piece, location, purpose);
+            break
+        case "knight":
+            determineKnightMoves(piece, location, purpose);
+            break
+        case "pawn":
+            determinePawnMoves(piece, location, purpose);
+            break
+        case "king":
+            determineKingMoves(piece, location, purpose);
+            break
+        default:
+            break
+    }
+
 }
 
 
