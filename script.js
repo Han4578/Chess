@@ -85,8 +85,8 @@ let currentPiece = ''
 let selectedPieceId = ''
 let colour
 let hasTurns = true
-export let w_being_checked = false //w checks b
-export let b_being_checked = false //b checks w
+export let w_being_checked = false //b checks w
+export let b_being_checked = false //w checks b
 let gameEnded = false
 let isPromoting = false
 
@@ -190,13 +190,10 @@ for (const t of tile) {
             t.dataset.firstMove = false
         }
 
-
-
-
         refreshCheckableTiles()
         if (w_being_checked) checkPossibleMoves('white')
         else if (b_being_checked) checkPossibleMoves('black')
-        // else checkForStalemate()
+        else checkForStalemate()
         changeTurn()
     }
 }
@@ -229,18 +226,18 @@ export function checkForCheckmate(c, x, y) { //the king cannot move onto these t
 
     let correspondingTile = locateTile(x, y)
     if (Array.from(correspondingTile.children).length == 0) {
-        (c == 'white') ? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
+        (c == 'white')? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
         return false //no pieces on tile
-
+        
     } else if (correspondingTile.firstChild.dataset.type == 'king' && correspondingTile.firstChild.dataset.colour !== c) {
         correspondingTile.firstChild.dataset.checked = true;
         w_being_checked = false;
         b_being_checked = false;
-        (c == 'white') ? b_being_checked = true: w_being_checked = true;
+        (c == 'white')? b_being_checked = true: w_being_checked = true;
         return false //enemy king found
 
     } else {
-        (c == 'white') ? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
+        (c == 'white')? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
         return true //piece on tile
 
     }
@@ -257,10 +254,11 @@ export function simulateMove(x, y, piece, purpose = 'move') { //if i move here c
         correspondingTile.appendChild(imaginaryPiece)
         refreshCheckableTiles()
         if ((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
-            if (purpose != 'checkMoves') correspondingTile.classList.add('possible')
+            if (purpose !== 'checkMoves') correspondingTile.classList.add('possible')
             else gameEnded = false
         }
         correspondingTile.removeChild(imaginaryPiece);
+        refreshCheckableTiles()
         w_being_checked = original[0];
         b_being_checked = original[1];
         return false //no piece on tile
@@ -268,12 +266,13 @@ export function simulateMove(x, y, piece, purpose = 'move') { //if i move here c
     } else if (correspondingTile.firstElementChild.dataset.colour !== piece.dataset.colour) {
         let enemyPiece = correspondingTile.firstElementChild
         correspondingTile.removeChild(enemyPiece)
-        refreshCheckableTiles()
+        refreshCheckableTiles(enemyPiece)
         if ((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
-            if (purpose != 'checkMoves') correspondingTile.classList.add('possible')
+            if (purpose !== 'checkMoves') correspondingTile.classList.add('possible')
             else gameEnded = false
         }
         correspondingTile.appendChild(enemyPiece)
+        refreshCheckableTiles()
         w_being_checked = original[0]
         b_being_checked = original[1]
         return true //enemy on tile
@@ -326,8 +325,25 @@ function checkPossibleMoves(c) { //when checked, can i still move
         determineMoves(p.dataset.type, p, p.parentElement.dataset.number, 'checkMoves')
         if (!gameEnded) break
     }
-
+    
     if (gameEnded && !kingMovability) endGame(c)
+}
+
+function checkForStalemate() {
+    let whiteCanMove = false
+    let blackCanMove = false
+    for (const c of ['black', 'white']) {
+        gameEnded = true
+        for (const p of pieces) {
+            if (p.dataset.colour !== c) continue
+            determineMoves(p.dataset.type, p, p.parentElement.dataset.number, 'checkMoves')
+            if (!gameEnded) {
+                (c == 'white')? whiteCanMove = true : blackCanMove = true;
+                break
+            }
+        }
+    }
+    if (!whiteCanMove || !blackCanMove) endGame('draw')
 }
 
 
@@ -434,6 +450,7 @@ function endGame(c) {
     let winner = (c == 'white') ? 'black' : 'white';
     let winnerBoard = document.querySelector('.winner')
     winnerBoard.innerHTML = 'Winner: ' + winner
+    if (c == 'draw') winnerBoard.innerHTML = 'Draw by stalemate'
     winnerBoard.style.display = 'flex'
     for (const p of pieces) {
         p.style.pointerEvents = 'none'

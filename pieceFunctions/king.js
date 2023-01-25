@@ -71,7 +71,6 @@ export function determineKingMoves(piece, l, purpose) {
 
 function checkAvailability(x, y) {
     let correspondingTile = locateTile(x, y)
-    console.log(purp);
     if (Array.from(correspondingTile.children).length == 0) {
         if (purp !== 'checkMoves') correspondingTile.classList.add('possible')
         return true //no piece on tile

@@ -55,9 +55,8 @@ export function determinePawnMoves(piece, location, purpose) {
         if (Array.from(correspondingTile.children).length == 0) {
 
             if (purpose == 'move') correspondingTile.classList.add('possible')
-            else if (purpose == 'checked' || purpose == 'checkMoves') {
-                simulateMove(x, y, pawn, purpose)
-            }
+            else if (purpose == 'checked' || purpose == 'checkMoves') simulateMove(x, y, pawn, purpose)
+            
             return true
         } else return false
     }
