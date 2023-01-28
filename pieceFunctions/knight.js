@@ -60,6 +60,9 @@ export function determineKnightMoves(piece, l, purpose) {
             case 'checkMoves':
                 simulateMove(loc.x, loc.y, piece, 'checkMoves')
                 break;
+            case 'checkTakes':
+                checkForTakes(loc.x, loc.y, piece)
+                break;
             default:
                 break;
         }

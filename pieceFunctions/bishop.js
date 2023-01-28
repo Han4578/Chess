@@ -1,4 +1,4 @@
-import {checkAvailability, checkForCheckmate, simulateMove, w_being_checked, b_being_checked} from "../script.js"
+import {checkAvailability, checkForCheckmate, simulateMove, checkForTakes, w_being_checked, b_being_checked} from "../script.js"
 
 export function determineBishopMoves(piece, l, purpose) {
     let c = piece.dataset.colour
