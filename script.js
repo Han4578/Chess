@@ -165,6 +165,7 @@ for (const t of tile) {
 
         for (const p of pieces) {
             p.dataset.firstMove = false
+            p.classList.remove('en-passanted')
         }
 
         if (target.dataset.firstMove == 'true') { //allow en passant if pawn first move

@@ -22,7 +22,7 @@ export function determinePawnMoves(piece, location, purpose) {
         let isPossible = checkAvailability(X_Coords, Y2)
         checkForEnemy(X_Coords, Y2)
         checkForEnPassant(X_Coords, Y_Coords)
-        if ((Y_Coords == (colour == 'white')? 2 : 7) && isPossible) specialTile(X_Coords, Y3)
+        if (((colour == 'white' && Y_Coords == 2) || (colour == 'black' && Y_Coords == 7 )) && isPossible) specialTile(X_Coords, Y3)
 
     }
 
