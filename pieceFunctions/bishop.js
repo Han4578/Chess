@@ -27,6 +27,9 @@ export function determineBishopMoves(piece, l, purpose) {
             case 'checkMoves':
                 isOccupied = simulateMove(i, rightDown, piece, 'checkMoves')
                 break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(i, rightDown, piece)
+                break;
             default:
                 break;
         }
@@ -47,6 +50,9 @@ export function determineBishopMoves(piece, l, purpose) {
                 break;
             case 'checkMoves':
                 isOccupied = simulateMove(i, leftUp, piece, 'checkMoves')
+                break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(i, leftUp, piece)
                 break;
             default:
                 break;
@@ -69,6 +75,9 @@ export function determineBishopMoves(piece, l, purpose) {
             case 'checkMoves':
                 isOccupied = simulateMove(rightUp, i, piece, 'checkMoves')
                 break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(rightUp, i, piece)
+                break;
             default:
                 break;
         }
@@ -90,6 +99,9 @@ export function determineBishopMoves(piece, l, purpose) {
                 break;
             case 'checkMoves':
                 isOccupied = simulateMove(leftDown, i, piece, 'checkMoves')
+                break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(leftDown, i, piece)
                 break;
             default:
                 break;

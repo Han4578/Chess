@@ -1,4 +1,4 @@
-import {checkAvailability, checkForCheckmate, simulateMove, w_being_checked, b_being_checked} from "../script.js"
+import {checkAvailability, checkForCheckmate, simulateMove, checkForTakes, w_being_checked, b_being_checked} from "../script.js"
 
 export function determineRookMoves(piece, location, purpose) {
     let c = piece.dataset.colour
@@ -21,6 +21,12 @@ export function determineRookMoves(piece, location, purpose) {
             case 'checkMoves':
                 isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves') 
                 break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(i, Y_Coords, piece) 
+                break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(i, Y_Coords, piece)
+                break;
             default:
                 break;
         }
@@ -42,6 +48,9 @@ export function determineRookMoves(piece, location, purpose) {
             case 'checkMoves':
                 isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
                 break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(i, Y_Coords, piece)
+                break;
             default:
                 break;
         }
@@ -60,7 +69,10 @@ export function determineRookMoves(piece, location, purpose) {
                 isOccupied = simulateMove(X_Coords, i, piece)
                 break;
             case 'checkMoves':
-                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
+                isOccupied = simulateMove(X_Coords, i, piece, 'checkMoves')
+                break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(X_Coords, i, piece)
                 break;
             default:
                 break;
@@ -80,7 +92,10 @@ export function determineRookMoves(piece, location, purpose) {
                 isOccupied = simulateMove(X_Coords, i, piece)
                 break;
             case 'checkMoves':
-                isOccupied = simulateMove(i, Y_Coords, piece, 'checkMoves')
+                isOccupied = simulateMove(X_Coords, i, piece, 'checkMoves')
+                break;
+            case 'checkTakes':
+                isOccupied = checkForTakes(X_Coords, i, piece)
                 break;
             default:
                 break;

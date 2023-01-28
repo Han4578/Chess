@@ -89,6 +89,7 @@ export let w_being_checked = false //b checks w
 export let b_being_checked = false //w checks b
 let gameEnded = false
 let isPromoting = false
+let canBeMoved = true
 
 changeTurn()
 
@@ -266,7 +267,7 @@ export function simulateMove(x, y, piece, purpose = 'move') { //if i move here c
     } else if (correspondingTile.firstElementChild.dataset.colour !== piece.dataset.colour) {
         let enemyPiece = correspondingTile.firstElementChild
         correspondingTile.removeChild(enemyPiece)
-        refreshCheckableTiles(enemyPiece)
+        refreshCheckableTiles([enemyPiece])
         if ((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
             if (purpose !== 'checkMoves') correspondingTile.classList.add('possible')
             else gameEnded = false
@@ -284,7 +285,7 @@ export function simulateMove(x, y, piece, purpose = 'move') { //if i move here c
     } //ally on tile
 }
 
-export function refreshCheckableTiles(exception) { //refresh where the king can't move
+export function refreshCheckableTiles(exception = []) { //refresh where the king can't move
     for (const t of tile) {
         t.dataset.w_checkable = false
         t.dataset.b_checkable = false
@@ -292,24 +293,48 @@ export function refreshCheckableTiles(exception) { //refresh where the king can'
     w_being_checked = false
     b_being_checked = false
     for (const p of pieces) {
-        if (p == exception) continue
+        if (exception.includes(p)) continue
         determineMoves(p.dataset.type, p, p.parentElement.dataset.number, 'checkmate')
     }
 }
 
-function checkMovablity(piece) { //if i move here will i be checked
+function checkMovablity(piece) { //if i move from here will i be checked
     if ((piece.dataset.colour == 'white' && w_being_checked) || (piece.dataset.colour == 'black' && b_being_checked)) return true
     let correspondingTile = piece.parentElement
     let result
 
     correspondingTile.removeChild(piece)
-    refreshCheckableTiles(piece)
+    refreshCheckableTiles([piece])
 
     result = ((colour == 'white' && w_being_checked) || (colour == 'black' && b_being_checked)) ? false : true;
 
     correspondingTile.appendChild(piece)
     refreshCheckableTiles()
+
+    if (!result) determineMoves(piece.dataset.type, piece, piece.parentElement.dataset.number, 'checkTakes')
+    
     return result
+}
+
+export function checkForTakes(x, y, piece) {
+    let correspondingTile = locateTile(x, y)
+    let colour = piece.dataset.colour
+
+    if (Array.from(correspondingTile.children).length == 0) return false
+    else if (correspondingTile.firstElementChild.dataset.colour == colour) return true
+
+    let enemy = correspondingTile.firstElementChild
+    let parent = piece.parentElement
+    correspondingTile.removeChild(enemy)
+    parent.removeChild(piece)
+    refreshCheckableTiles([piece, enemy])
+    if ((colour == 'white' && !w_being_checked) || (colour == 'black' && !b_being_checked)) {
+        correspondingTile.classList.add('possible')
+    };
+    correspondingTile.appendChild(enemy)
+    parent.appendChild(piece)
+    refreshCheckableTiles()
+
 }
 
 function checkPossibleMoves(c) { //when checked, can i still move
