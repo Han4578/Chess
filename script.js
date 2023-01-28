@@ -350,7 +350,17 @@ export function checkForTakes(x, y, piece) {
     let correspondingTile = locateTile(x, y)
     let colour = piece.dataset.colour
 
-    if (Array.from(correspondingTile.children).length == 0) return false
+    if (Array.from(correspondingTile.children).length == 0) {
+        let original = piece.parentElement
+        correspondingTile.appendChild(piece)
+        refreshCheckableTiles()
+        if ((colour == 'white' && !w_being_checked) || (colour == 'black' && !b_being_checked)) {
+            correspondingTile.classList.add('possible')
+        };
+        original.appendChild(piece)
+        refreshCheckableTiles()
+        return false
+    }
     else if (correspondingTile.firstElementChild.dataset.colour == colour) return true
 
     let enemy = correspondingTile.firstElementChild
@@ -364,7 +374,7 @@ export function checkForTakes(x, y, piece) {
     correspondingTile.appendChild(enemy)
     parent.appendChild(piece)
     refreshCheckableTiles()
-
+    return true
 }
 
 function checkPossibleMoves(c) { //when checked, can i still move

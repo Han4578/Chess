@@ -14,12 +14,13 @@ export function determinePawnMoves(piece, location, purpose) {
         let Y2 = (colour == 'white')? Y_Coords + 1: Y_Coords - 1;
         let Y3 = (colour == 'white')? Y_Coords + 2: Y_Coords - 2;
 
-        if (purpose == 'checkmate' || purpose == 'checkTakes') {
+        if (purpose == 'checkmate') {
             checkForEnemy(X_Coords, Y2)
             return
         }
 
-        let isPossible = checkAvailability(X_Coords, Y2)
+        let isPossible = (purpose == 'checkTakes')? checkForTakes(X_Coords, Y2, pawn): checkAvailability(X_Coords, Y2);
+        if (Array.from(locateTile(X_Coords, Y2).children) == 0 && purpose == 'checkTakes') isPossible = true
         checkForEnemy(X_Coords, Y2)
         checkForEnPassant(X_Coords, Y_Coords)
         if (((colour == 'white' && Y_Coords == 2) || (colour == 'black' && Y_Coords == 7 )) && isPossible) specialTile(X_Coords, Y3)
@@ -30,9 +31,21 @@ export function determinePawnMoves(piece, location, purpose) {
         let correspondingTile = locateTile(x, y)
         if (Array.from(correspondingTile.children).length == 0) {
             correspondingTile.dataset.firstMove = true
-
-            if (purpose == 'move') correspondingTile.classList.add('possible')
-            else if (purpose == 'checked' || purpose == 'checkMoves') simulateMove(x, y, pawn, purpose)
+    
+            switch (purpose) {
+                case 'move':
+                    correspondingTile.classList.add('possible')
+                    break;
+                case 'checked':
+                case 'checkMoves':
+                    simulateMove(x, y, pawn, purpose)
+                    break;
+                case 'checkTakes':
+                    checkForTakes(x, y, pawn)
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
