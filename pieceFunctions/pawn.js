@@ -1,4 +1,4 @@
-import { checkForCheckmate, simulateMove, refreshCheckableTiles, locateTile, checkForTakes, w_being_checked, b_being_checked } from "../script.js";
+import { checkForCheckmate, simulateMove, simulateEnPassantMove, locateTile, checkForTakes, w_being_checked, b_being_checked } from "../script.js";
 
 export function determinePawnMoves(piece, location, purpose) {
     let X_Coords = location.charCodeAt(0) - 96
@@ -6,37 +6,23 @@ export function determinePawnMoves(piece, location, purpose) {
     let colour = piece.dataset.colour;
     let pawn = piece;
     if (purpose == 'move' && ((colour == 'white' && w_being_checked == true) || (colour == 'black' && b_being_checked == true))) purpose = 'checked';
-    (colour == 'white') ? whiteMove(): blackMove();
+    move()
 
+    function move() {
+        if ((colour == 'black' && Y_Coords == 1) || (colour == 'white' && Y_Coords == 8)) return
 
-    function whiteMove() {
-        if (Y_Coords == 8) return
-
-        if (purpose == 'checkmate') {
-            checkForEnemy(X_Coords, Y_Coords + 1)
-            return
-        }
-
-        let isPossible = checkAvailability(X_Coords, Y_Coords + 1)
-        checkForEnemy(X_Coords, Y_Coords + 1)
-        checkForEnPassantW(X_Coords, Y_Coords)
-        if (Y_Coords == 2 && isPossible) specialTile(X_Coords, Y_Coords + 2)
-
-
-    }
-
-    function blackMove() {
-        if (Y_Coords == 1) return
+        let Y2 = (colour == 'white')? Y_Coords + 1: Y_Coords - 1;
+        let Y3 = (colour == 'white')? Y_Coords + 2: Y_Coords - 2;
 
         if (purpose == 'checkmate' || purpose == 'checkTakes') {
-            checkForEnemy(X_Coords, Y_Coords - 1)
+            checkForEnemy(X_Coords, Y2)
             return
         }
 
-        let isPossible = checkAvailability(X_Coords, Y_Coords - 1)
-        checkForEnemy(X_Coords, Y_Coords - 1)
-        checkForEnPassantB(X_Coords, Y_Coords)
-        if (Y_Coords == 7 && isPossible) specialTile(X_Coords, Y_Coords - 2)
+        let isPossible = checkAvailability(X_Coords, Y2)
+        checkForEnemy(X_Coords, Y2)
+        checkForEnPassant(X_Coords, Y_Coords)
+        if ((Y_Coords == (colour == 'white')? 2 : 7) && isPossible) specialTile(X_Coords, Y3)
 
     }
 
@@ -67,128 +53,59 @@ export function determinePawnMoves(piece, location, purpose) {
         let right = x + 1
         let leftTile = locateTile(left, y)
         let rightTile = locateTile(right, y)
-        if (left < 9 && left > 0) {
-            if (purpose == 'checkmate') checkForCheckmate(colour, left, y);
-            else if (Array.from(leftTile.children).length !== 0 && leftTile.firstChild.dataset.colour !== colour) {
+        let enemyTiles = []
+
+        if (left < 9 && left > 0) enemyTiles.push(leftTile)
+        if (right < 9 && right > 0) enemyTiles.push(rightTile)
+
+        for (const t of enemyTiles) {
+            let horizontal = (t == leftTile)? left: right;
+            if (purpose == 'checkmate') checkForCheckmate(colour, horizontal, y)
+            else if (Array.from(t.children).length !== 0 && t.firstChild.dataset.colour !== colour) {
                 switch (purpose) {
                     case 'move':
-                        leftTile.classList.add('possible');
+                        t.classList.add('possible');
                         break;
                     case 'checked':
-                        simulateMove(left, y, pawn)
+                        simulateMove(horizontal, y, pawn)
                         break;
                     case 'checkMoves':
-                        simulateMove(left, y, pawn, 'checkMoves')
+                        simulateMove(horizontal, y, pawn, 'checkMoves')
                         break;
                     case 'checkTakes':
-                        checkForTakes(left, y, pawn)
+                        checkForTakes(horizontal, y, pawn)
                         break;
                     default:
                         break;
                 }
             }
         }
-        if (right < 9 && right > 0) {
-            if (purpose == 'checkmate') checkForCheckmate(colour, right, y)
-            else if (Array.from(rightTile.children).length !== 0 && rightTile.firstChild.dataset.colour !== colour) {
-                switch (purpose) {
-                    case 'move':
-                        rightTile.classList.add('possible');
-                        break;
-                    case 'checked':
-                        simulateMove(right, y, pawn)
-                        break;
-                    case 'checkMoves':
-                        simulateMove(right, y, pawn, 'checkMoves')
-                        break;
-                    case 'checkTakes':
-                        checkForTakes(right, y, pawn)
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+
     }
 
-    function checkForEnPassantB(x, y) {
+    function checkForEnPassant(x, y) {
         let left = x - 1
         let right = x + 1
         let leftTile = locateTile(left, y)
         let rightTile = locateTile(right, y)
+        let capturedTiles = []
 
-        if (left < 9 && left > 0) {
-            if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
+        if (left < 9 && left > 0) capturedTiles.push(leftTile)
+        if (right < 9 && right > 0) capturedTiles.push(rightTile)
+
+        for (const t of capturedTiles) {
+            let horizontal = (t == leftTile)? left: right;
+            let vertical = (pawn.dataset.colour == 'white')? y + 1: y - 1
+            if (Array.from(t.children).length !== 0 && t.firstElementChild.dataset.firstMove == 'true' && t.firstElementChild.dataset.colour !== colour) {
                 if (purpose == 'move') {
-                    let tile = locateTile(left, y - 1)
-                    leftTile.firstElementChild.classList.add('en-passanted')
+                    let tile = locateTile(horizontal, vertical)
+                    t.firstElementChild.classList.add('en-passanted')
                     tile.classList.add('special')
                     tile.classList.add('possible')
-                } else simulateMove(left, y - 1, pawn, purpose)
-
-            }
-        }
-
-        if (right < 9 && right > 0) {
-            if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
-                if (purpose == 'move') {
-                    let tile = locateTile(right, y - 1)
-                    rightTile.firstElementChild.classList.add('en-passanted')
-                    tile.classList.add('special')
-                    tile.classList.add('possible')
-                } else simulateMove(left, y - 1, pawn, purpose)
+                } else simulateEnPassantMove(horizontal, vertical, pawn, purpose) // checkmoves or checked
             }
         }
     }
 
-    function checkForEnPassantW(x, y) {
-        let left = x - 1
-        let right = x + 1
-        let leftTile = locateTile(left, y)
-        let rightTile = locateTile(right, y)
 
-        if (left < 9 && left > 0) {
-            if (Array.from(leftTile.children).length !== 0 && leftTile.firstElementChild.dataset.firstMove == 'true') {
-                if (purpose == 'move') {
-                    let tile = locateTile(left, y + 1)
-                    leftTile.firstElementChild.classList.add('en-passanted')
-                    tile.classList.add('special')
-                    tile.classList.add('possible')
-                } else simulateEnPassantMove(left, y + 1, pawn)
-            }
-        }
-        if (right < 9 && right > 0) {
-            if (Array.from(rightTile.children).length !== 0 && rightTile.firstElementChild.dataset.firstMove == 'true') {
-                if (purpose == 'move') {
-                    let tile = locateTile(right, y + 1)
-                    rightTile.firstElementChild.classList.add('en-passanted')
-                    tile.classList.add('special')
-                    tile.classList.add('possible')
-                } else simulateEnPassantMove(left, y + 1, pawn)
-            }
-        }
-    }
-
-    function simulateEnPassantMove(x, y, piece) {
-        let original = [w_being_checked, b_being_checked]
-        w_being_checked = false
-        b_being_checked = false
-        let correspondingTile = locateTile(x, y)
-        let passantedTile = locateTile(x, y - 1)
-        let imaginaryPiece = document.createElement('div')
-        imaginaryPiece.classList.add('imaginary')
-        correspondingTile.appendChild(imaginaryPiece)
-
-        let enemyPiece = passantedTile.firstElementChild
-        passantedTile.removeChild(enemyPiece)
-        refreshCheckableTiles([enemyPiece])
-        if ((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
-            correspondingTile.classList.add('possible')
-        }
-        correspondingTile.removeChild(imaginaryPiece);
-        passantedTile.appendChild(enemyPiece)
-        refreshCheckableTiles()
-        w_being_checked = original[0]
-        b_being_checked = original[1]
-    }
 }

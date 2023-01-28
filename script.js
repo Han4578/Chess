@@ -89,7 +89,6 @@ export let w_being_checked = false //b checks w
 export let b_being_checked = false //w checks b
 let gameEnded = false
 let isPromoting = false
-let canBeMoved = true
 
 changeTurn()
 
@@ -283,6 +282,36 @@ export function simulateMove(x, y, piece, purpose = 'move') { //if i move here c
         b_being_checked = original[1]
         return true
     } //ally on tile
+}
+
+export function simulateEnPassantMove(x, y, piece, purpose) {//if i en passant can i stop the check
+    let original = [w_being_checked, b_being_checked]
+    w_being_checked = false
+    b_being_checked = false
+
+    let correspondingTile = locateTile(x, y)
+    let passantedTile = locateTile(x, (piece.dataset.colour == 'white')? y - 1: y + 1)
+    let imaginaryPiece = document.createElement('div')
+    imaginaryPiece.classList.add('imaginary')
+    correspondingTile.appendChild(imaginaryPiece)
+
+    let enemyPiece = passantedTile.firstElementChild
+    passantedTile.removeChild(enemyPiece)
+    refreshCheckableTiles([enemyPiece])
+    if ((piece.dataset.colour == 'white' && !w_being_checked) || (piece.dataset.colour == 'black' && !b_being_checked)) {
+        if (purpose == 'checked') {
+            correspondingTile.classList.add('possible')
+            correspondingTile.classList.add('special')
+            enemyPiece.classList.add('en-passanted')
+        }
+        else gameEnded = false //checkmoves
+    }
+    correspondingTile.removeChild(imaginaryPiece);
+    passantedTile.appendChild(enemyPiece)
+    refreshCheckableTiles()
+
+    w_being_checked = original[0]
+    b_being_checked = original[1]
 }
 
 export function refreshCheckableTiles(exception = []) { //refresh where the king can't move
