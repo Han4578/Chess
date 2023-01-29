@@ -224,7 +224,6 @@ export function locateTile(x, y) {
 }
 
 export function checkForCheckmate(c, x, y) { //the king cannot move onto these tiles
-
     let correspondingTile = locateTile(x, y)
     if (Array.from(correspondingTile.children).length == 0) {
         (c == 'white')? correspondingTile.dataset.w_checkable = true: correspondingTile.dataset.b_checkable = true;
@@ -351,15 +350,21 @@ export function checkForTakes(x, y, piece) {
     let colour = piece.dataset.colour
 
     if (Array.from(correspondingTile.children).length == 0) {
+        let result = false
         let original = piece.parentElement
-        correspondingTile.appendChild(piece)
-        refreshCheckableTiles()
-        if ((colour == 'white' && !w_being_checked) || (colour == 'black' && !b_being_checked)) {
-            correspondingTile.classList.add('possible')
-        };
+        let imaginaryPiece = document.createElement('div')
+        imaginaryPiece.classList.add('imaginary')
+        correspondingTile.appendChild(imaginaryPiece)
+        original.removeChild(piece)
+        refreshCheckableTiles([piece])
+        
+        if ((colour == 'white' && !w_being_checked) || (colour == 'black' && !b_being_checked)) correspondingTile.classList.add('possible')
+        else result = true
+
         original.appendChild(piece)
+        correspondingTile.removeChild(imaginaryPiece)
         refreshCheckableTiles()
-        return false
+        return result
     }
     else if (correspondingTile.firstElementChild.dataset.colour == colour) return true
 
@@ -495,7 +500,6 @@ function determineMoves(condition, piece, location, purpose) {
     }
 
 }
-
 
 function changeTurn() {
     if (!hasTurns || isPromoting) return;
