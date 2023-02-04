@@ -107,6 +107,11 @@ function checkForCastle() {
                 let correspondingTile = locateTile(i, Y_Coords)
                 if (Array.from(correspondingTile.children).length !== 0) count = false;
             }
+            for (const x of [X_Coords - 1, X_Coords - 2]) {
+                let correspondingTile = locateTile(x, Y_Coords)
+                let condition = (colour == 'white')? correspondingTile.dataset.b_checkable == 'true' : correspondingTile.dataset.w_checkable == 'true';
+                if (condition) count = false
+            }
             if (count) castleLeft = true
         }
         
@@ -115,15 +120,20 @@ function checkForCastle() {
                 let correspondingTile = locateTile(i, Y_Coords)
                 if (Array.from(correspondingTile.children).length !== 0) count = false;
             }
+            for (const x of [X_Coords + 1, X_Coords + 2]) {
+                let correspondingTile = locateTile(x, Y_Coords)
+                let condition = (colour == 'white')? correspondingTile.dataset.b_checkable == 'true' : correspondingTile.dataset.w_checkable == 'true';
+                if (condition) count = false
+            }
             if (count) castleRight = true
         }
     }
-    if (castleLeft == true){
+    if (castleLeft){
         let correspondingTile = locateTile(X_Coords - 2, Y_Coords)
         correspondingTile.classList.add('possible')
         correspondingTile.dataset.castle = true
     }
-    if (castleRight == true){
+    if (castleRight){
         let correspondingTile = locateTile(X_Coords + 2, Y_Coords)
         correspondingTile.classList.add('possible')
         correspondingTile.dataset.castle = true
@@ -134,14 +144,19 @@ export function castle(tileNum, king){
     let y = king.id[1]
     let rookTile
     let rook
+    let notation
     if (tileNum.includes('c')){
         rook = locateTile(1, y).firstElementChild
         rookTile = locateTile(4, y)
+        notation = (king.dataset.colour == 'white')? '0-0-0' : '0-0'
     }
     if (tileNum.includes('g')){
         rook = locateTile(8, y).firstElementChild
         rookTile = locateTile(6, y)
+        notation = (king.dataset.colour == 'white')? '0-0' : '0-0-0'
+
     }
     rookTile.appendChild(rook)
     king.dataset.canCastle = false
+    return notation
 }
