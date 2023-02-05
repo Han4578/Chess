@@ -74,6 +74,12 @@ for (const c of containers) {
     }
 }
 
+
+reverseBtn.addEventListener('click', () => {
+    board.classList.toggle('reverse')
+})
+
+
 setupBoard.setup()
 //------------------------------------------------------------------------------------------------------------------------------
 
@@ -202,12 +208,13 @@ for (const t of tile) {
             t.dataset.firstMove = false
         }
 
+        changeTurn()
         didCheck = refreshCheckableTiles()
         if (w_being_checked) didCheckmate = checkPossibleMoves('white')
         else if (b_being_checked) didCheckmate = checkPossibleMoves('black')
         else checkForStalemate()
         insertNotation(droppedPiece, target, didTake, didCastle, didCheck, didCheckmate)
-        changeTurn()
+        checkForRepitition()
     }
 }
 
@@ -521,11 +528,23 @@ function insertNotation(piece, tile, didTake, didCastle, didCheck, didCheckmate)
     
         let x = (didTake)? 'x': '';
         let t = tile.dataset.number
-        let c = (didCheck)? '+': '';
-        result = p + x + t + c;
+        let c = (didCheck && !didCheckmate  )? '+': '';
+        let cm = (didCheckmate)? '#': '';
+        result = p + x + t + c + cm;
     } else result = didCastle;
     (piece.dataset.colour == 'white')? whiteNotation.push(result): blackNotation.push(result)
     if (piece.dataset.colour == 'black') console.log(whiteNotation[whiteNotation.length - 1], blackNotation[blackNotation.length - 1]);
+    if (didCheckmate && whiteNotation.length > blackNotation.length) console.log(whiteNotation[whiteNotation.length - 1]);
+}
+
+function checkForRepitition() {
+    if (whiteNotation.length < 6) return
+
+    let a = [whiteNotation[whiteNotation.length - 1], blackNotation[blackNotation.length - 1]].toString()
+    let b = [whiteNotation[whiteNotation.length - 3], blackNotation[blackNotation.length - 3]].toString()
+    let c = [whiteNotation[whiteNotation.length - 5], blackNotation[blackNotation.length - 5]].toString()
+
+    if (a == b && b == c) endGame('repitition')
 }
 
 function determineMoves(condition, piece, location, purpose) {
@@ -564,15 +583,29 @@ function changeTurn() {
     (turn == 'white') ? turn = 'black': turn = 'white';
 }
 
-reverseBtn.addEventListener('click', () => {
-    board.classList.toggle('reverse')
-})
-
 function endGame(c) {
-    let winner = (c == 'white') ? 'black' : 'white';
     let winnerBoard = document.querySelector('.winner')
-    winnerBoard.innerHTML = 'Winner: ' + winner
-    if (c == 'draw') winnerBoard.innerHTML = 'Draw by stalemate'
+    let text
+    switch (c) {
+        case 'black':
+            text = 'Winner: White'
+            break;
+        case 'white':
+            text = 'Winner: Black'
+            break;
+        case 'draw':
+            text = 'Draw by stalemate'
+            break;
+        case 'repitition':
+            text = 'Draw by repitition'
+            break;
+    
+        default:
+            break;
+    }
+
+    winnerBoard.innerHTML = text
+
     winnerBoard.style.display = 'flex'
     for (const p of pieces) {
         p.style.pointerEvents = 'none'
