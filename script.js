@@ -214,7 +214,7 @@ for (const t of tile) {
         else if (b_being_checked) didCheckmate = checkPossibleMoves('black')
         else checkForStalemate()
         insertNotation(droppedPiece, target, didTake, didCastle, didCheck, didCheckmate)
-        checkForRepitition()
+        checkForRepetition()
     }
 }
 
@@ -537,14 +537,14 @@ function insertNotation(piece, tile, didTake, didCastle, didCheck, didCheckmate)
     if (didCheckmate && whiteNotation.length > blackNotation.length) console.log(whiteNotation[whiteNotation.length - 1]);
 }
 
-function checkForRepitition() {
+function checkForRepetition() {
     if (whiteNotation.length < 6) return
 
     let a = [whiteNotation[whiteNotation.length - 1], blackNotation[blackNotation.length - 1]].toString()
     let b = [whiteNotation[whiteNotation.length - 3], blackNotation[blackNotation.length - 3]].toString()
     let c = [whiteNotation[whiteNotation.length - 5], blackNotation[blackNotation.length - 5]].toString()
 
-    if (a == b && b == c) endGame('repitition')
+    if (a == b && b == c) endGame('repetition')
 }
 
 function determineMoves(condition, piece, location, purpose) {
@@ -596,8 +596,8 @@ function endGame(c) {
         case 'draw':
             text = 'Draw by stalemate'
             break;
-        case 'repitition':
-            text = 'Draw by repitition'
+        case 'repetition':
+            text = 'Draw by repetition'
             break;
     
         default:
